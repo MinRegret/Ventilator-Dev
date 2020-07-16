@@ -171,9 +171,9 @@ class ControlModuleBase:
         self._critical_time     = prefs.get_pref('HEARTBEAT_TIMEOUT')           #If Controller has not received set/get within the last 200 ms, it gets nervous.
 
         self._waveform = BreathWaveform((self.__SET_PEEP, self.__SET_PIP), [
-            self.__SET_PIP_GAIN,
+            self.__SET_PIP_GAIN / 2,
             self.__SET_I_PHASE,
-            self.__SET_PEEP_TIME,
+            self.__SET_PEEP_TIME + self.__SET_I_PHASE,
             self.__SET_CYCLE_DURATION
         ])
         self._adaptivecontroller = PredictivePID(self._waveform)
@@ -1148,9 +1148,7 @@ class PredictivePID:
 class BreathWaveform:
     def __init__(self, range, keypoints):
         self.lo, self.hi = range
-        self.xp = [0]
-        for keypoint in keypoints:
-            self.xp.append(self.xp[-1] + keypoint)
+        self.xp = [0] + keypoints
         self.fp = [self.lo, self.hi, self.hi, self.lo, self.lo]
 
     def at(self, t):
