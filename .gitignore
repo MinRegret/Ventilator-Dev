@@ -1,6 +1,7 @@
 venv*
 .idea*
 __pycache__*
+.ipynb_checkpoints
 */.DS_Store
 .DS_Store
 tmp

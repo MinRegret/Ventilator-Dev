@@ -74,11 +74,11 @@ class ControlModuleBase:
 
         # Internal Control variables. "SET" indicates that this is set.
         self.__SET_PIP       = CONTROL[ValueName.PIP].default                     # Target PIP pressure
-        self.__SET_PIP_GAIN  = CONTROL[ValueName.PIP_TIME].default                # Target time to reach PIP in seconds
+        self.__SET_PIP_GAIN  = 0.3 # CONTROL[ValueName.PIP_TIME].default                # Target time to reach PIP in seconds
         self.__SET_PEEP      = CONTROL[ValueName.PEEP].default                    # Target PEEP pressure
-        self.__SET_PEEP_TIME = CONTROL[ValueName.PEEP_TIME].default               # Target time to reach PEEP from PIP plateau
+        self.__SET_PEEP_TIME = 0.5 # CONTROL[ValueName.PEEP_TIME].default               # Target time to reach PEEP from PIP plateau
         self.__SET_BPM       = CONTROL[ValueName.BREATHS_PER_MINUTE].default      # Target breaths per minute
-        self.__SET_I_PHASE   = CONTROL[ValueName.INSPIRATION_TIME_SEC].default    # Target duration of inspiratory phase
+        self.__SET_I_PHASE   = 1.2 # CONTROL[ValueName.INSPIRATION_TIME_SEC].default    # Target duration of inspiratory phase
 
         # Derived internal control variables - fully defined by numbers above
         try:
@@ -173,7 +173,7 @@ class ControlModuleBase:
         self._waveform = BreathWaveform((self.__SET_PEEP, self.__SET_PIP), [
             self.__SET_PIP_GAIN,
             self.__SET_I_PHASE,
-            self.__SET_PEEP_TIME,
+            self.__SET_PEEP_TIME + self.__SET_I_PHASE,
             self.__SET_CYCLE_DURATION
         ])
         self._adaptivecontroller = PredictivePID(self._waveform)
@@ -1148,9 +1148,7 @@ class PredictivePID:
 class BreathWaveform:
     def __init__(self, range, keypoints):
         self.lo, self.hi = range
-        self.xp = [0]
-        for keypoint in keypoints:
-            self.xp.append(self.xp[-1] + keypoint)
+        self.xp = [0] + keypoints
         self.fp = [self.lo, self.hi, self.hi, self.lo, self.lo]
 
     def at(self, t):
