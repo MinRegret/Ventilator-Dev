@@ -779,7 +779,7 @@ class ControlModuleDevice(ControlModuleBase):
               ValueName.BREATHS_PER_MINUTE.name   : self._DATA_BPM,
               ValueName.INSPIRATION_TIME_SEC.name : self._DATA_I_PHASE,
               # ValueName.FLOWOUT.name              : self._DATA_Qout,
-              ValueName.FLOWOUT.name              : self.HAL.setpoint_in,
+              ValueName.FLOWOUT.name              : self.HAL.setpoint_in + self.HAL.setpoint_ex * 10,
               'timestamp'                         : time.time(),
               'loop_counter'                      : self._loop_counter,
               'breath_count'                      : self._DATA_BREATH_COUNT
@@ -983,135 +983,9 @@ class Balloon_Simulator:
         self.r_real = (3 * self.min_volume / (4 * np.pi)) ** (1 / 3)
         self.current_volume = self.min_volume
 
-class ControlModuleSimulator(ControlModuleBase):
-    """
-    Controlling Simulation.
-    """
-    # Implement ControlModuleBase functions
-    def __init__(self, simulator_dt = None, peep_valve_setting = 5):
-        """
-        Args:
-            simulator_dt (None, float): if None, simulate dt at same rate controller updates.
-                if ``float`` , fix dt updates with this value but still update at _LOOP_UPDATE_TIME
-        """
-        ControlModuleBase.__init__(self, save_logs = False)
-        self.Balloon = Balloon_Simulator(peep_valve = peep_valve_setting)          # This is the simulation
-        self._sensor_to_COPY()
-
-        self.simulator_dt = simulator_dt
-
-    def __del__(self):
-        ControlModuleBase.__del__(self)
-        self.set_valves_standby()
-
-    def set_valves_standby(self):
-        pass
-
-    def __SimulatedPropValve(self, x, dt):
-        '''
-        This simulates the action of a proportional valve.
-        Flow-current-curve eye-balled generaic prop vale.
-        x:  Input current [mA]
-        dt: Time since last setting in seconds [for the LP filter]
-        '''
-        flow_new = (np.tanh(0.12*(0.5*x - 30)) + 1)
-        if x<0:
-            flow_new = 0
-        return flow_new
-
-    def __SimulatedSolenoid(self, x):
-        '''
-        Depending on x, set flow to a binary value.
-        Here: flow is either 0 or 1l/sec
-        '''
-        if x > 0:
-            return 1
-        else:
-            return 0
-
-    def _sensor_to_COPY(self):
-        # And the sensor measurements
-        with self._lock:
-            self.COPY_sensor_values = SensorValues(vals={
-              ValueName.PIP.name                  : self._DATA_PIP,
-              ValueName.PEEP.name                 : self._DATA_PEEP,
-              ValueName.FIO2.name                 : self.Balloon.fio2,
-              ValueName.PRESSURE.name             : self.Balloon.current_pressure,
-              ValueName.VTE.name                  : self._adaptivecontroller.errs[-1],
-              ValueName.BREATHS_PER_MINUTE.name   : self._DATA_BPM,
-              ValueName.INSPIRATION_TIME_SEC.name : self._DATA_I_PHASE,
-              ValueName.FLOWOUT.name              : self._DATA_Qout,
-              'timestamp'                  : time.time(),
-              'loop_counter'             : self._loop_counter,
-              'breath_count': self._DATA_BREATH_COUNT
-            })
-
-    def _start_mainloop(self):
-        # start running, this should be run as a thread! 
-        # Compare to initialization in Base Class!
-
-        update_copies = self._NUMBER_CONTROLL_LOOPS_UNTIL_UPDATE
-        self.logger.info("MainLoop: start")
-        while self._running.is_set():
-            # time.sleep(self._LOOP_UPDATE_TIME)
-            self._loop_counter += 1
-            now = time.time()
-            if self.simulator_dt:
-                dt = self.simulator_dt
-            else:
-                dt = now - self._last_update                            # Time sincle last cycle of main-loop
-                if dt > 0.2:                                            # TODO: RAISE HARDWARE ALARM, no update should take longer than 0.5 sec
-                    self.logger.warning("MainLoop: Update too long: " + str(dt))
-                    print("Restarted cycle.")
-                    self._control_reset()
-                    self.Balloon._reset()
-                    dt = self._LOOP_UPDATE_TIME
-
-            self.Balloon.update(dt = dt)                            # Update the state of the balloon simulation
-            self._DATA_PRESSURE_LIST.append(self.Balloon.get_pressure())       # Get a pressure measurement from balloon and tell controller             --- SENSOR 1
-            if len(self._DATA_PRESSURE_LIST) > 5:
-                self._DATA_PRESSURE_LIST.pop(0)
-
-            # self._PID_update(dt = dt)                               # Update the PID Controller
-            self._Predictive_PID_update(dt = dt)
-
-            x = self._get_control_signal_in()                       # Inspiratory side: get control signal for PropValve
-            Qin = self.__SimulatedPropValve(x, dt = dt)             # And calculate the produced flow Qin
-
-            y = self._get_control_signal_out()                      # Expiratory side: get control signal for Solenoid
-            Qout = self.__SimulatedSolenoid(y)                      # Set expiratory flow rate, Qout
-
-            self.Balloon.set_flow_in(Qin, dt = dt)                  # Set the flow rates for the Balloon simulator
-            self.Balloon.set_flow_out(Qout, dt = dt)
-
-            self._DATA_Qout = self.Balloon.Qout                     # Tell controller the expiratory flow rate, _DATA_Qout                    --- SENSOR 2
-            self._last_update = now
-
-            if update_copies == 0:
-                self._controls_from_COPY()     # Update controls from possibly updated values as a chunk
-                self._sensor_to_COPY()         # Copy sensor values to COPY
-                update_copies = self._NUMBER_CONTROLL_LOOPS_UNTIL_UPDATE
-            else:
-                update_copies -= 1
-
-        # # get final values on stop
-        self._controls_from_COPY()  # Update controls from possibly updated values as a chunk
-        self._sensor_to_COPY()  # Copy sensor values to COPY
-
-
-
 
 def get_control_module(sim_mode=False, simulator_dt = None):
-    """
-    Generates control module.
-    Args:
-        sim_mode (bool): if ``true``: returns simulation, else returns hardware
-    """
-
-    if sim_mode == True:
-        return ControlModuleSimulator(simulator_dt = simulator_dt)
-    else:
-        return ControlModuleDevice(save_logs = True, flush_every = 1, config_file = 'vent/io/config/devices.ini')
+    return ControlModuleDevice(save_logs = True, flush_every = 1, config_file = 'vent/io/config/devices.ini')
 
 
 class PredictivePID:
