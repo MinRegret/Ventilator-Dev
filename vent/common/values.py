@@ -166,7 +166,7 @@ VALUES = odict({
     }),
     ValueName.VTE: Value(**{
         'name': 'control_in err',
-        'units': 'mmH2O',  # Unit is liters :-)
+        'units': 'cm H2O',  # Unit is liters :-)
         'abs_range': (-20, 20),
         'safe_range': (-20, 20),
         'decimals': 2,
@@ -175,7 +175,7 @@ VALUES = odict({
     }),
     ValueName.PRESSURE: Value(**{
         'name': 'Pressure',
-        'units': 'mmH2O',
+        'units': 'cm H2O',
         'abs_range': (0,70),
         'safe_range': (0,60),
         'decimals': 1,
