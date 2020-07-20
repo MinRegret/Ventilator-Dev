@@ -1148,6 +1148,10 @@ class PredictivePID:
         else:
             new_av = (np.sum(self.errs) + np.sum(hallucinated_errors)) * (self.storage / (self.storage + len(hallucinated_errors)))
             u =  new_av + self.bias
+
+        u *= self.KP
+
+        print("################ {}: {}".format(t, u))
         return self.KP * u
 
 class BreathWaveform:
