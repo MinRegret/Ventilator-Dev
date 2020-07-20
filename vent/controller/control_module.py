@@ -616,10 +616,8 @@ class ControlModuleBase:
 
         self.__control_signal_in = self._adaptivecontroller.feed(self._DATA_PRESSURE, now)
 
-        print(self.__control_signal_in)
-
         if cycle_phase < self.__SET_I_PHASE:            
-            self.__control_signal_out = 0                                                        # close out valve
+            self.__control_signal_out = 1                                                        # close out valve
 
         elif cycle_phase < self.__SET_PEEP_TIME + self.__SET_I_PHASE:                                     # then, we drop pressure to PEEP
             self.__control_signal_out = 1
