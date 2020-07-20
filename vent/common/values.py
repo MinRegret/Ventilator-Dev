@@ -166,7 +166,7 @@ VALUES = odict({
     }),
     ValueName.VTE: Value(**{
         'name': 'Error',
-        'units': 'l',  # Unit is liters :-)
+        'units': 'mmH2O',  # Unit is liters :-)
         'abs_range': (-20, 20),
         'safe_range': (-20, 20),
         'decimals': 2,
