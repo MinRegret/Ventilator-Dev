@@ -1112,7 +1112,7 @@ def get_control_module(sim_mode=False, simulator_dt = None):
 class PredictivePID:
     def __init__(self, waveform, hallucination_length=0, dt=0.003):
         # controller coeffs
-        self.storage = 3
+        self.storage = 1
         self.errs = np.zeros(self.storage)
         self.bias_lr = 0.0
         self.bias = 0
