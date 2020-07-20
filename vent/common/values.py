@@ -196,7 +196,7 @@ VALUES = odict({
         'units': 'cm H2O',
         'abs_range': (0, 70), # FIXME
         'safe_range': (0, 50), # From DrDan https://tigervents.slack.com/archives/C011MRVJS7L/p1588190130492300
-        'default': 35,           # FIXME
+        'default': 25,           # FIXME
         'decimals': 1,
         'control': True,
         'sensor': True
@@ -226,7 +226,7 @@ VALUES = odict({
         'units': 'cm H2O',
         'abs_range': (0, 20),  # FIXME
         'safe_range': (0, 16), # From DrDan https://tigervents.slack.com/archives/C011MRVJS7L/p1588190130492300
-        'default': 5,            # FIXME
+        'default': 10,            # FIXME
         'decimals': 1,
         'control': True,
         'sensor': True
@@ -246,7 +246,7 @@ VALUES = odict({
         'units': 'BPM', # Daniel re: FDA labels
         'abs_range': (0, 50), # FIXME
         'safe_range': (10, 30), # Stanford's socs https://www.vent4us.org/technical
-        'default': 20,            # FIXME
+        'default': 12,            # FIXME
         'decimals': 1,
         'control': True,
         'sensor': True
