@@ -614,7 +614,7 @@ class ControlModuleBase:
         self._DATA_VOLUME += dt * self._DATA_Qout  # Integrate what has happened within the last few seconds from flow out
         self._DATA_PRESSURE = np.mean(self._DATA_PRESSURE_LIST)
 
-        self.__control_signal_in = 0 #self._adaptivecontroller.feed(self._DATA_PRESSURE, now)
+        self.__control_signal_in = self._adaptivecontroller.feed(self._DATA_PRESSURE, now)
 
         if cycle_phase < self.__SET_I_PHASE:            
             self.__control_signal_out = 0                                                        # close out valve
