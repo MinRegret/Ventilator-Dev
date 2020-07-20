@@ -1030,6 +1030,7 @@ class ControlModuleSimulator(ControlModuleBase):
             return 0
 
     def _sensor_to_COPY(self):
+        print(self._adaptivecontroller.errs[-1])
         # And the sensor measurements
         with self._lock:
             self.COPY_sensor_values = SensorValues(vals={
@@ -1134,7 +1135,6 @@ class PredictivePID:
     def feed(self, state, t):
         # Ingests current error, updates controller states, outputs PredictivePID control
         self.errs[0] = self.waveform.at(t) - state
-        print(self.errs[0])
         self.errs = np.roll(self.errs, -1)
         self.bias += np.sign(np.average(self.errs)) * self.bias_lr
 
