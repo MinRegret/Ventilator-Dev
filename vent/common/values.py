@@ -252,10 +252,10 @@ VALUES = odict({
         'sensor': True
     }),
     ValueName.FLOWOUT: Value(**{
-        'name': 'Flow OUT',
-        'units': 'l/s',
-        'abs_range': (0, 2),
-        'safe_range': (0, 2),
+        'name': 'Control',
+        'units': '%',
+        'abs_range': (0, 100),
+        'safe_range': (0, 100),
         'decimals': 2,
         'control': False,
         'sensor': True
