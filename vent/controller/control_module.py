@@ -134,7 +134,7 @@ class ControlModuleBase:
 
         self._DATA_Qout     = 0           # Measurement of the airflow out
         self._DATA_dpdt     = 0           # Current sample of the rate of change of pressure dP/dt in cmH2O/sec
-        2elf.__DATA_old     = None
+        self.__DATA_old     = None
         self._last_update   = time.time()
         self._flow_list = deque(maxlen = 500)          # An archive of past flows, to calculate background flow out
         self._DATA_PRESSURE_LIST = list()
