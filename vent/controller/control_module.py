@@ -779,7 +779,7 @@ class ControlModuleDevice(ControlModuleBase):
               ValueName.BREATHS_PER_MINUTE.name   : self._DATA_BPM,
               ValueName.INSPIRATION_TIME_SEC.name : self._DATA_I_PHASE,
               # ValueName.FLOWOUT.name              : self._DATA_Qout,
-              ValueName.FLOWOUT.name              : 50,
+              ValueName.FLOWOUT.name              : self.HAL.setpoint_in,
               'timestamp'                         : time.time(),
               'loop_counter'                      : self._loop_counter,
               'breath_count'                      : self._DATA_BREATH_COUNT
