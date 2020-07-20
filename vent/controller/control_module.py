@@ -1046,8 +1046,6 @@ class ControlModuleSimulator(ControlModuleBase):
               'breath_count': self._DATA_BREATH_COUNT
             })
 
-        print(self._adaptivecontroller.errs[-1])
-
     def _start_mainloop(self):
         # start running, this should be run as a thread! 
         # Compare to initialization in Base Class!
@@ -1136,6 +1134,7 @@ class PredictivePID:
     def feed(self, state, t):
         # Ingests current error, updates controller states, outputs PredictivePID control
         self.errs[0] = self.waveform.at(t) - state
+        print(self.errs[0])
         self.errs = np.roll(self.errs, -1)
         self.bias += np.sign(np.average(self.errs)) * self.bias_lr
 
