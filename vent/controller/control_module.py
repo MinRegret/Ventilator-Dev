@@ -1144,11 +1144,11 @@ class PredictivePID:
         
         # if t < 0.1:
         if True:
-            u = np.sum(self.errs) + self.bias
+           u = np.sum(self.errs) + self.bias
         else:
             new_av = (np.sum(self.errs) + np.sum(hallucinated_errors)) * (self.storage / (self.storage + len(hallucinated_errors)))
             u =  new_av + self.bias
-        return u
+        return 0.1 * u
 
 class BreathWaveform:
     def __init__(self, range, keypoints):
