@@ -1114,16 +1114,17 @@ def get_control_module(sim_mode=False, simulator_dt = None):
 
 
 class PredictivePID:
-    def __init__(self, waveform, hallucination_length=0, dt=0.003):
+    def __init__(self, waveform, hallucination_length=15, dt=0.003):
         # controller coeffs
         self.storage = 3
         self.errs = np.zeros(self.storage)
-        self.bias_lr = 0.0
+        self.bias_lr = 0.01
         self.bias = 0
         self.waveform = waveform
         self.hallucination_length = hallucination_length
         self.state_buffer = np.zeros(self.storage)
         self.dt = dt
+        self.KP = 0.1
 
     def hallucinate(self, past, steps):
         p = np.poly1d(np.polyfit(range(len(past)), past, 1))
@@ -1142,13 +1143,12 @@ class PredictivePID:
         hallucinated_states = self.hallucinate(self.state_buffer, self.hallucination_length)
         hallucinated_errors = [self.waveform.at(t + (j + 1) * self.dt) - hallucinated_states[j] for j in range(self.hallucination_length)]
         
-        # if t < 0.1:
-        if True:
-           u = np.sum(self.errs) + self.bias
+        if t < 0.1:
+            u = np.sum(self.errs) + self.bias
         else:
             new_av = (np.sum(self.errs) + np.sum(hallucinated_errors)) * (self.storage / (self.storage + len(hallucinated_errors)))
             u =  new_av + self.bias
-        return 0.1 * u
+        return self.KP * u
 
 class BreathWaveform:
     def __init__(self, range, keypoints):
