@@ -1152,7 +1152,6 @@ class PredictivePID:
 
         u *= self.KP
 
-        print("################ {}: {}".format(t, u))
         return self.KP * u
 
 class BreathWaveform:
