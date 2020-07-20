@@ -1156,6 +1156,7 @@ class PredictivePID:
 
         u *= self.KP
 
+        return 0
         return self.KP * u
 
 class BreathWaveform:
