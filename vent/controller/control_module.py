@@ -169,13 +169,17 @@ class ControlModuleBase:
         ####################### Internal health checks ###########################
         self._time_last_contact = time.time()
         self._critical_time     = prefs.get_pref('HEARTBEAT_TIMEOUT')           #If Controller has not received set/get within the last 200 ms, it gets nervous.
-
-        self._waveform = BreathWaveform((self.__SET_PEEP, self.__SET_PIP), [
+        pressure_range = (self.__SET_PEEP, self.__SET_PIP)
+        keypoints = [
             self.__SET_PIP_GAIN / 2,
             self.__SET_I_PHASE,
             self.__SET_PEEP_TIME + self.__SET_I_PHASE,
             self.__SET_CYCLE_DURATION
-        ])
+        ]
+        self._waveform = BreathWaveform(pressure_range, keypoints)
+
+        print("Elad sez: {}, {}".format(pressure_range, keypoints))
+
         self._adaptivecontroller = PredictivePID(self._waveform)
 
     def __del__(self):
@@ -1139,7 +1143,6 @@ class PredictivePID:
         hallucinated_errors = [self.waveform.at(t + (j + 1) * self.dt) - hallucinated_states[j] for j in range(self.hallucination_length)]
         
         # if t < 0.1:
-        if True:
             u = np.sum(self.errs) + self.bias
         else:
             new_av = (np.sum(self.errs) + np.sum(hallucinated_errors)) * (self.storage / (self.storage + len(hallucinated_errors)))
