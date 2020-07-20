@@ -156,10 +156,10 @@ class Value(object):
 
 
 VALUES = odict({
-    ValueName.FIO2: Value(**{ 'name': 'control_out err',
+    ValueName.FIO2: Value(**{ 'name': 'control_out',
         'units': 'boolz',
-        'abs_range': (0, 1),
-        'safe_range': (0, 1),
+        'abs_range': (0, 2),
+        'safe_range': (0, 2),
         'decimals' : 1,
         'control': False,
         'sensor': True
