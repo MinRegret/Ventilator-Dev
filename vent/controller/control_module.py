@@ -1124,7 +1124,7 @@ class PredictivePID:
         self.hallucination_length = hallucination_length
         self.state_buffer = np.zeros(self.storage)
         self.dt = dt
-        self.KP = 0.1
+        self.KP = 0.3
 
     def hallucinate(self, past, steps):
         p = np.poly1d(np.polyfit(range(len(past)), past, 1))
