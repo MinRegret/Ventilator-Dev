@@ -165,10 +165,10 @@ VALUES = odict({
         'sensor': True
     }),
     ValueName.VTE: Value(**{
-        'name': 'VTE',
+        'name': 'Error',
         'units': 'l',  # Unit is liters :-)
-        'abs_range': (0, 100),
-        'safe_range': (0, 100),
+        'abs_range': (-20, 20),
+        'safe_range': (-20, 20),
         'decimals': 2,
         'control': False,
         'sensor': True
@@ -183,10 +183,10 @@ VALUES = odict({
         'sensor': True
     }),
     ValueName.IE_RATIO: Value(**{
-        'name': 'I:E Ratio',
+        'name': 'Error',
         'units': '',
-        'abs_range': (0, 2),
-        'safe_range': (0.33, 1),
+        'abs_range': (-20, 20),
+        'safe_range': (-20, 20),
         'decimals': 2,
         'control': False,
         'sensor': False

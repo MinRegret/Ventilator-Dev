@@ -1037,7 +1037,7 @@ class ControlModuleSimulator(ControlModuleBase):
               ValueName.PEEP.name                 : self._DATA_PEEP,
               ValueName.FIO2.name                 : self.Balloon.fio2,
               ValueName.PRESSURE.name             : self.Balloon.current_pressure,
-              ValueName.VTE.name                  : self._DATA_VTE,
+              ValueName.VTE.name                  : self._adaptivecontroller.errs[-1],
               ValueName.BREATHS_PER_MINUTE.name   : self._DATA_BPM,
               ValueName.INSPIRATION_TIME_SEC.name : self._DATA_I_PHASE,
               ValueName.FLOWOUT.name              : self._DATA_Qout,

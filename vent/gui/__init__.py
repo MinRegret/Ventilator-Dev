@@ -23,7 +23,8 @@ def limit_gui(limit=None):
 
 PLOTS = odict({
     ValueName.PRESSURE: SENSOR[ValueName.PRESSURE].to_dict(),
-    ValueName.FLOWOUT: SENSOR[ValueName.FLOWOUT].to_dict()
+    ValueName.FLOWOUT: SENSOR[ValueName.FLOWOUT].to_dict(),
+    ValueName.VTE: SENSOR[ValueName.VTE].to_dict()
 })
 """
 Values to plot.
