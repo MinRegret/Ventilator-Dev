@@ -1046,6 +1046,8 @@ class ControlModuleSimulator(ControlModuleBase):
               'breath_count': self._DATA_BREATH_COUNT
             })
 
+        print(self._adaptivecontroller.errs[-1])
+
     def _start_mainloop(self):
         # start running, this should be run as a thread! 
         # Compare to initialization in Base Class!
