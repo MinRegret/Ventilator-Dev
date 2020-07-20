@@ -775,7 +775,7 @@ class ControlModuleDevice(ControlModuleBase):
               ValueName.PEEP.name                 : self._DATA_PEEP,
               ValueName.FIO2.name                 : self.COPY_DATA_OXYGEN,
               ValueName.PRESSURE.name             : self._DATA_PRESSURE,
-              ValueName.VTE.name                  : self._DATA_VTE,
+              ValueName.VTE.name                  : self._adaptivecontroller.errs[-1],
               ValueName.BREATHS_PER_MINUTE.name   : self._DATA_BPM,
               ValueName.INSPIRATION_TIME_SEC.name : self._DATA_I_PHASE,
               # ValueName.FLOWOUT.name              : self._DATA_Qout,
@@ -1030,7 +1030,6 @@ class ControlModuleSimulator(ControlModuleBase):
             return 0
 
     def _sensor_to_COPY(self):
-        print(self._adaptivecontroller.errs[-1])
         # And the sensor measurements
         with self._lock:
             self.COPY_sensor_values = SensorValues(vals={
