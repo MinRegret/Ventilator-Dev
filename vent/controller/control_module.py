@@ -134,7 +134,7 @@ class ControlModuleBase:
 
         self._DATA_Qout     = 0           # Measurement of the airflow out
         self._DATA_dpdt     = 0           # Current sample of the rate of change of pressure dP/dt in cmH2O/sec
-        self.__DATA_old     = None
+        2elf.__DATA_old     = None
         self._last_update   = time.time()
         self._flow_list = deque(maxlen = 500)          # An archive of past flows, to calculate background flow out
         self._DATA_PRESSURE_LIST = list()
@@ -1110,7 +1110,7 @@ def get_control_module(sim_mode=False, simulator_dt = None):
 
 
 class PredictivePID:
-    def __init__(self, waveform, hallucination_length=15, dt=0.003):
+    def __init__(self, waveform, hallucination_length=10, dt=0.003):
         # controller coeffs
         self.storage = 3
         self.errs = np.zeros(self.storage)
