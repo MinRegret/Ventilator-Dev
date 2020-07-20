@@ -773,13 +773,13 @@ class ControlModuleDevice(ControlModuleBase):
           self.COPY_sensor_values = SensorValues(vals={
               ValueName.PIP.name                  : self._DATA_PIP,
               ValueName.PEEP.name                 : self._DATA_PEEP,
-              ValueName.FIO2.name                 : self.COPY_DATA_OXYGEN,
+              ValueName.FIO2.name                 : self.HAL.setpoint_ex,
               ValueName.PRESSURE.name             : self._DATA_PRESSURE,
               ValueName.VTE.name                  : self._adaptivecontroller.errs[-1],
               ValueName.BREATHS_PER_MINUTE.name   : self._DATA_BPM,
               ValueName.INSPIRATION_TIME_SEC.name : self._DATA_I_PHASE,
               # ValueName.FLOWOUT.name              : self._DATA_Qout,
-              ValueName.FLOWOUT.name              : self.HAL.setpoint_in + self.HAL.setpoint_ex * 10,
+              ValueName.FLOWOUT.name              : self.HAL.setpoint_in,
               'timestamp'                         : time.time(),
               'loop_counter'                      : self._loop_counter,
               'breath_count'                      : self._DATA_BREATH_COUNT

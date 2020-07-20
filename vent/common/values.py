@@ -156,16 +156,16 @@ class Value(object):
 
 
 VALUES = odict({
-    ValueName.FIO2: Value(**{ 'name': 'FiO2',
-        'units': '%',
-        'abs_range': (0, 100),
-        'safe_range': (20, 100),
+    ValueName.FIO2: Value(**{ 'name': 'control_out err',
+        'units': 'boolz',
+        'abs_range': (0, 1),
+        'safe_range': (0, 1),
         'decimals' : 1,
         'control': False,
         'sensor': True
     }),
     ValueName.VTE: Value(**{
-        'name': 'Error',
+        'name': 'control_in err',
         'units': 'mmH2O',  # Unit is liters :-)
         'abs_range': (-20, 20),
         'safe_range': (-20, 20),
