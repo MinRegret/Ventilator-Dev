@@ -171,7 +171,7 @@ class ControlModuleBase:
         self._critical_time     = prefs.get_pref('HEARTBEAT_TIMEOUT')           #If Controller has not received set/get within the last 200 ms, it gets nervous.
 
         self._waveform = BreathWaveform((self.__SET_PEEP, self.__SET_PIP), [
-            self.__SET_PIP_GAIN / 2,
+            1e-8,
             self.__SET_I_PHASE,
             self.__SET_PEEP_TIME + self.__SET_I_PHASE,
             self.__SET_CYCLE_DURATION
