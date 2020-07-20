@@ -784,6 +784,8 @@ class ControlModuleDevice(ControlModuleBase):
               'loop_counter'                      : self._loop_counter,
               'breath_count'                      : self._DATA_BREATH_COUNT
           })
+
+        print(self.HAL.setpoint_in)
             
     # @timeout
     def _set_HAL(self, valve_open_in, valve_open_out):
