@@ -786,8 +786,6 @@ class ControlModuleDevice(ControlModuleBase):
               'loop_counter'                      : self._loop_counter,
               'breath_count'                      : self._DATA_BREATH_COUNT
           })
-
-        print(self.HAL.setpoint_in)
             
     # @timeout
     def _set_HAL(self, valve_open_in, valve_open_out):
@@ -1129,7 +1127,7 @@ class PredictivePID:
         self.hallucination_length = hallucination_length
         self.state_buffer = np.zeros(self.storage)
         self.dt = dt
-        self.KP = 0.1
+        self.KP = 10
 
     def hallucinate(self, past, steps):
         p = np.poly1d(np.polyfit(range(len(past)), past, 1))
@@ -1156,7 +1154,6 @@ class PredictivePID:
 
         u *= self.KP
 
-        return 0
         return self.KP * u
 
 class BreathWaveform:
