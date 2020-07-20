@@ -1114,7 +1114,7 @@ class PredictivePID:
         # controller coeffs
         self.storage = 3
         self.errs = np.zeros(self.storage)
-        self.bias_lr = 0.01
+        self.bias_lr = 0.0
         self.bias = 0
         self.waveform = waveform
         self.hallucination_length = hallucination_length
