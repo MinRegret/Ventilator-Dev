@@ -756,7 +756,7 @@ class ControlModuleDevice(ControlModuleBase):
             )
 
             cycle_phase = self.controller.cycle_phase(now)
-            print(cycle_phase)
+
             self._ControlModuleBase__test_for_alarms()
             if cycle_phase > self._ControlModuleBase__SET_CYCLE_DURATION:
                 self.__start_new_breathcycle()
