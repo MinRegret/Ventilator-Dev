@@ -148,7 +148,6 @@ class ControlModuleBase:
         self._breath_counter = count()  # threadsafe counter
 
         # Parameters to keep track of breath-cycle
-        self._cycle_start = time.time()
         self.__cycle_waveform = np.array([[0, 0, 0]])  # To build up the current cycle's waveform
         self.__cycle_waveform_archive = deque(
             maxlen=self._RINGBUFFER_SIZE
@@ -397,10 +396,6 @@ class ControlModuleBase:
         self._time_last_contact = time.time()
         return return_value
 
-    def _control_reset(self):
-        """ Resets the internal controller cycle to zero, i.e. this breath cycle re-starts."""
-        self._cycle_start = time.time()
-
     def __test_for_alarms(self):
         """
         Implements tests that are to be executed in the main control loop:
@@ -497,7 +492,6 @@ class ControlModuleBase:
         """
         This has to be executed when the next breath cycles starts
         """
-        self._cycle_start = time.time()  # New cycle starts
         self._DATA_VOLUME = 0  # ... start at zero volume in the lung
         self._DATA_dpdt = 0  # and restart the rolling average for the dP/dt estimation
 
@@ -696,7 +690,7 @@ class ControlModuleDevice(ControlModuleBase):
         Only during expiration is the flow-sensor queried!
         """
 
-        inspiration_phase = (time.time() - self._cycle_start) < self.COPY_SET_I_PHASE
+        inspiration_phase = self.controller.cycle_phase(time.time()) < self.COPY_SET_I_PHASE
 
         self._DATA_PRESSURE = self.HAL.pressure  # Get pressure reading
         self._DATA_PRESSURE_LIST.append(
@@ -752,7 +746,6 @@ class ControlModuleDevice(ControlModuleBase):
             ):  # TODO: RAISE HARDWARE ALARM, no update should be so long
                 self.logger.warning("MainLoop: Update too long: " + str(dt))
                 print("Restarted cycle.")
-                self._control_reset()
                 dt = self._LOOP_UPDATE_TIME
 
             self._get_HAL()  # Update pressure and flow measurement
