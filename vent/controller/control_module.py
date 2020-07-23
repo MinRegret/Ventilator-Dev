@@ -166,7 +166,6 @@ class ControlModuleBase:
         self._DATA_Qout = 0  # Measurement of the airflow out
         self._DATA_dpdt = 0  # Current sample of the rate of change of pressure dP/dt in cmH2O/sec
         self.__DATA_old = None
-        self._last_update = time.time()
         self._flow_list = deque(
             maxlen=500
         )  # An archive of past flows, to calculate background flow out
@@ -397,24 +396,6 @@ class ControlModuleBase:
 
         self._time_last_contact = time.time()
         return return_value
-
-    def __get_PID_error(self, ytarget, yis, dt, RC):
-        """
-        Calculates the three terms for PID control. Also takes a timestep "dt" on which the integral-term is smoothed.
-        Args:
-            ytarget: target value
-            yis:     current values
-            dt:      timestep
-        """
-        error_new = ytarget - yis  # New value of the error
-
-        # RC = 0.250 # Time constant in seconds
-        s = dt / (dt + RC)
-        self._DATA_I = self._DATA_I + s * (
-            error_new - self._DATA_I
-        )  # Integral term on some timescale RC  -- TODO: If used, for real system, add integral windup
-        self._DATA_D = self._DATA_D + s * (error_new - self._DATA_P - self._DATA_D)
-        self._DATA_P = error_new
 
     def _control_reset(self):
         """ Resets the internal controller cycle to zero, i.e. this breath cycle re-starts."""
@@ -764,7 +745,7 @@ class ControlModuleDevice(ControlModuleBase):
         while self._running.is_set():
             self._loop_counter += 1
             now = time.time()
-            dt = now - self._last_update  # Time sincle last cycle of main-loop
+            dt = self.controller.dt(now)
 
             if (
                 dt > CONTROL[ValueName.BREATHS_PER_MINUTE].default / 4
@@ -776,15 +757,14 @@ class ControlModuleDevice(ControlModuleBase):
 
             self._get_HAL()  # Update pressure and flow measurement
 
-            now = time.time()
-            cycle_phase = now - self._cycle_start
-
             self._DATA_VOLUME += dt * self._DATA_Qout
             self._DATA_PRESSURE = np.mean(self._DATA_PRESSURE_LIST)
 
             self.__control_signal_in, self.__control_signal_out = self.controller.feed(
-                self._DATA_PRESSURE, cycle_phase
+                self._DATA_PRESSURE, now
             )
+
+            cycle_phase = self.controller.cycle_phase(now)
 
             self.__test_for_alarms()
             if cycle_phase > self.__SET_CYCLE_DURATION:
@@ -799,8 +779,6 @@ class ControlModuleDevice(ControlModuleBase):
                 self.__save_values()
 
             self._set_HAL(self.__control_signal_in, self.__control_signal_out)
-
-            self._last_update = now
 
             if update_copies == 0:
                 self._controls_from_COPY()
