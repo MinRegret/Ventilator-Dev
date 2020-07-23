@@ -18,7 +18,7 @@ from vent.alarm import ALARM_RULES, AlarmType, AlarmSeverity, Alarm
 from vent import prefs
 
 from lung.utils import BreathWaveform
-from lung.controllers import PredictivePID
+from lung.controllers._predictive_pid import PredictivePID
 
 
 class ControlModuleBase:
@@ -396,6 +396,10 @@ class ControlModuleBase:
         self._time_last_contact = time.time()
         return return_value
 
+    def test_for_alarms(self):
+        # bypass mangling
+        self.__test_for_alarms()
+
     def __test_for_alarms(self):
         """
         Implements tests that are to be executed in the main control loop:
@@ -627,22 +631,17 @@ class ControlModuleDevice(ControlModuleBase):
             config_file (string): Path to device config file, e.g. 'vent/io/config/dinky-devices.ini'
         """
         ControlModuleBase.__init__(self, save_logs, flush_every)
+
+        # self._waveform = BreathWaveform(pressure_range, keypoints)
+        # self.controller = PredictivePID(waveform=self._waveform)
+        self.controller = PredictivePID()
+
         self.HAL = io.Hal(config_file)
         self._sensor_to_COPY()
 
         # Current settings of the valves to avoid unneccesary hardware queries
         self.current_setting_ex = self.HAL.setpoint_ex
         self.current_setting_in = self.HAL.setpoint_in
-
-        pressure_range = (self.__SET_PEEP, self.__SET_PIP)
-        keypoints = [
-            self.__SET_PIP_GAIN / 2,
-            self.__SET_I_PHASE,
-            self.__SET_PEEP_TIME + self.__SET_I_PHASE,
-            self.__SET_CYCLE_DURATION,
-        ]
-        self._waveform = BreathWaveform(pressure_range, keypoints)
-        self.controller = PredictivePID(waveform=self._waveform)
 
     def __del__(self):
         self.set_valves_standby()  # First set valves to default
@@ -740,7 +739,6 @@ class ControlModuleDevice(ControlModuleBase):
             self._loop_counter += 1
             now = time.time()
             dt = self.controller.dt(now)
-
             if (
                 dt > CONTROL[ValueName.BREATHS_PER_MINUTE].default / 4
             ):  # TODO: RAISE HARDWARE ALARM, no update should be so long
@@ -753,26 +751,25 @@ class ControlModuleDevice(ControlModuleBase):
             self._DATA_VOLUME += dt * self._DATA_Qout
             self._DATA_PRESSURE = np.mean(self._DATA_PRESSURE_LIST)
 
-            self.__control_signal_in, self.__control_signal_out = self.controller.feed(
+            self._ControlModuleBase__control_signal_in, self._ControlModuleBase__control_signal_out = self.controller.feed(
                 self._DATA_PRESSURE, now
             )
 
             cycle_phase = self.controller.cycle_phase(now)
-
-            self.__test_for_alarms()
-            if cycle_phase > self.__SET_CYCLE_DURATION:
+            print(cycle_phase)
+            self._ControlModuleBase__test_for_alarms()
+            if cycle_phase > self._ControlModuleBase__SET_CYCLE_DURATION:
                 self.__start_new_breathcycle()
             else:
-                self.__cycle_waveform = np.append(
-                    self.__cycle_waveform,
+                self._ControlModuleBase__cycle_waveform = np.append(
+                    self._ControlModuleBase__cycle_waveform,
                     [[cycle_phase, self._DATA_PRESSURE, self._DATA_VOLUME]],
                     axis=0,
                 )
             if self._save_logs:
-                self.__save_values()
+                self._ControlModuleBase__save_values()
 
-            self._set_HAL(self.__control_signal_in, self.__control_signal_out)
-
+            self._set_HAL(self._ControlModuleBase__control_signal_in, self._ControlModuleBase__control_signal_out)
             if update_copies == 0:
                 self._controls_from_COPY()
                 self._sensor_to_COPY()
