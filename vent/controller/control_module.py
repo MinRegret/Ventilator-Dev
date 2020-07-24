@@ -634,7 +634,12 @@ class ControlModuleDevice(ControlModuleBase):
 
         # self._waveform = BreathWaveform(pressure_range, keypoints)
         # self.controller = PredictivePID(waveform=self._waveform)
-        self.controller = PredictivePID()
+        waveform = BreathWaveform((self._ControlModuleBase__SET_PEEP, self._ControlModuleBase__SET_PIP), 
+                                  [1e-8,
+                                   self._ControlModuleBase__SET_I_PHASE,
+                                   self._ControlModuleBase__SET_PEEP_TIME + self._ControlModuleBase__SET_I_PHASE,
+                                   self._ControlModuleBase__SET_CYCLE_DURATION])
+        self.controller = PredictivePID(waveform=waveform)
 
         self.HAL = io.Hal(config_file)
         self._sensor_to_COPY()
