@@ -329,30 +329,7 @@ class DataLogger:
         """
         make sure that the file's are not getting too large.
         """
-        total_size = 0
-        for filenames in os.listdir(self.log_dir):
-            fp = os.path.join(self.log_dir, filenames)
-            # skip if it is symbolic link
-            if (not os.path.islink(fp)) and fp.endswith('.h5'):
-                total_size += os.path.getsize(fp)
-
-        #Check file system
-        total_space_hd, used, free = shutil.disk_usage('/')
-        max_size = np.min([total_space_hd*0.2, 1e10])      # Limit to whatever is smaller, 20% of the file system or 10 GB
-
-        if len(os.listdir(self.log_dir)) > 1000:
-            message = f'Too many logfiles in {self.log_dir} (>1000 files). There are ' + str(len(os.listdir(self.log_dir))) + ' files. Delete some.'
-            print(message)
-            # self.logger.exception(message)  # Log a warning
-            self._data_save_allowed = False # Stop data saving
-        elif total_size>max_size:
-            message = f'Logfiles in {self.log_dir} are too large. Max allowed is ' + '{0:.2f}'.format(max_size*1e-9) + 'GB, used is ' + '{0:.2f}'.format(total_size*1e-9) +  'GB. Free disk space.'
-            print(message)
-            self.logger.exception(message)  # Log a warning
-            self._data_save_allowed = False # Stop data saving
-        else:
-            self._data_save_allowed = True  # Allow data saving
-            return total_size  # size in bytes
+        self._data_save_allowed = True  # Allow data saving
 
     def rotation_newfile(self):
         logfile_size = os.path.getsize(self.file)                       # Measure active logfile "..._log.0.h5"
