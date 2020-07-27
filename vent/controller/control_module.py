@@ -9,6 +9,7 @@ from collections import deque
 import pdb
 from itertools import count
 import datetime
+import tables as pytb
 
 import vent.io as io
 
@@ -252,7 +253,6 @@ class ControlModuleBase:
     def __analyze_last_waveform(self):
         """ This goes through the last waveform, and updates VTE, PEEP, PIP, PIP_TIME, I_PHASE, FIRST_PEEP and BPM."""
         if len(self.__cycle_waveform_archive) > 1:  # Only if there was a previous cycle
-            self.controller.flush_log(os.path.join(self.__log_directory, "timeseries.pkl"))
             data = self.__cycle_waveform_archive[-1]
             phase = data[:, 0]
             pressure = data[:, 1]
@@ -499,6 +499,7 @@ class ControlModuleBase:
         """
         This has to be executed when the next breath cycles starts
         """
+        print("Starting new breath cycle")
         self._DATA_VOLUME = 0  # ... start at zero volume in the lung
         self._DATA_dpdt = 0  # and restart the rolling average for the dP/dt estimation
 
@@ -655,16 +656,20 @@ class ControlModuleDevice(ControlModuleBase):
 
         # TODO: Hack
         self.__log_directory = os.path.join(
-            "~/vent/logs",
+            os.path.expanduser("~"),
+            "vent/logs",
             "{}.{}".format(
                 datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), self.controller.name
             ),
         )
+        print(self.__log_directory)
 
         if not os.path.exists(self.__log_directory):
             os.makedirs(self.__log_directory)
 
         self.dl.file = os.path.join(self.__log_directory, "environment.h5")
+        with pytb.open_file(self.dl.file, mode="a") as file:
+            self.dl.h5file = file
         self.controller.save(os.path.join(self.__log_directory, "controller.pkl"))
 
     def __del__(self):
@@ -758,6 +763,7 @@ class ControlModuleDevice(ControlModuleBase):
         self.logger.info("MainLoop: start")
 
         update_copies = self._NUMBER_CONTROLL_LOOPS_UNTIL_UPDATE
+        cycle_phase = None
 
         while self._running.is_set():
             self._loop_counter += 1
@@ -780,17 +786,20 @@ class ControlModuleDevice(ControlModuleBase):
                 self._ControlModuleBase__control_signal_out,
             ) = self.controller.feed(self._DATA_PRESSURE, now)
 
-            cycle_phase = self.controller.cycle_phase(now)
 
             self._ControlModuleBase__test_for_alarms()
-            if cycle_phase > self._ControlModuleBase__SET_CYCLE_DURATION:
-                self.__start_new_breathcycle()
+            if cycle_phase is None or cycle_phase > self.controller.cycle_phase(now):
+                self._ControlModuleBase__start_new_breathcycle()
+                self.controller.flush_log(os.path.join(self.__log_directory, "timeseries.pkl"))
             else:
                 self._ControlModuleBase__cycle_waveform = np.append(
                     self._ControlModuleBase__cycle_waveform,
                     [[cycle_phase, self._DATA_PRESSURE, self._DATA_VOLUME]],
                     axis=0,
                 )
+
+            cycle_phase = self.controller.cycle_phase(now)
+
             if self._save_logs:
                 self._ControlModuleBase__save_values()
 
