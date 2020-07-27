@@ -252,6 +252,7 @@ class ControlModuleBase:
     def __analyze_last_waveform(self):
         """ This goes through the last waveform, and updates VTE, PEEP, PIP, PIP_TIME, I_PHASE, FIRST_PEEP and BPM."""
         if len(self.__cycle_waveform_archive) > 1:  # Only if there was a previous cycle
+            self.controller.flush_log(os.path.join(self.__log_directory, "timeseries.pkl"))
             data = self.__cycle_waveform_archive[-1]
             phase = data[:, 0]
             pressure = data[:, 1]
