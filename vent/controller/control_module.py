@@ -18,7 +18,7 @@ from vent.alarm import ALARM_RULES, AlarmType, AlarmSeverity, Alarm
 from vent import prefs
 
 from lung.utils import BreathWaveform
-from lung.controllers._predictive_pid import PredictivePID
+from lung.controllers import *
 
 
 class ControlModuleBase:
@@ -632,14 +632,12 @@ class ControlModuleDevice(ControlModuleBase):
         """
         ControlModuleBase.__init__(self, save_logs, flush_every)
 
-        # self._waveform = BreathWaveform(pressure_range, keypoints)
-        # self.controller = PredictivePID(waveform=self._waveform)
         waveform = BreathWaveform((self._ControlModuleBase__SET_PEEP, self._ControlModuleBase__SET_PIP), 
                                   [1e-8,
                                    self._ControlModuleBase__SET_I_PHASE,
                                    self._ControlModuleBase__SET_PEEP_TIME + self._ControlModuleBase__SET_I_PHASE,
                                    self._ControlModuleBase__SET_CYCLE_DURATION])
-        self.controller = PredictivePID(waveform=waveform)
+        self.controller = PredictiveBiasPI(waveform=waveform)
 
         self.HAL = io.Hal(config_file)
         self._sensor_to_COPY()
