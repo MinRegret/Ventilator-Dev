@@ -664,6 +664,7 @@ class ControlModuleDevice(ControlModuleBase):
         if not os.path.exists(self.__log_directory):
             os.makedirs(self.__log_directory)
 
+        self.dl.file = os.path.join(self.__log_directory, "environment.h5")
         self.controller.save(os.path.join(self.__log_directory, "controller.pkl"))
 
     def __del__(self):
