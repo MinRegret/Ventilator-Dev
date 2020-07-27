@@ -1,3 +1,4 @@
+import os
 import time
 import typing
 from typing import List
@@ -7,6 +8,7 @@ import copy
 from collections import deque
 import pdb
 from itertools import count
+import datetime
 
 import vent.io as io
 
@@ -632,11 +634,15 @@ class ControlModuleDevice(ControlModuleBase):
         """
         ControlModuleBase.__init__(self, save_logs, flush_every)
 
-        waveform = BreathWaveform((self._ControlModuleBase__SET_PEEP, self._ControlModuleBase__SET_PIP), 
-                                  [1e-8,
-                                   self._ControlModuleBase__SET_I_PHASE,
-                                   self._ControlModuleBase__SET_PEEP_TIME + self._ControlModuleBase__SET_I_PHASE,
-                                   self._ControlModuleBase__SET_CYCLE_DURATION])
+        waveform = BreathWaveform(
+            (self._ControlModuleBase__SET_PEEP, self._ControlModuleBase__SET_PIP),
+            [
+                1e-8,
+                self._ControlModuleBase__SET_I_PHASE,
+                self._ControlModuleBase__SET_PEEP_TIME + self._ControlModuleBase__SET_I_PHASE,
+                self._ControlModuleBase__SET_CYCLE_DURATION,
+            ],
+        )
         self.controller = PredictiveBiasPI(waveform=waveform)
 
         self.HAL = io.Hal(config_file)
@@ -645,6 +651,19 @@ class ControlModuleDevice(ControlModuleBase):
         # Current settings of the valves to avoid unneccesary hardware queries
         self.current_setting_ex = self.HAL.setpoint_ex
         self.current_setting_in = self.HAL.setpoint_in
+
+        # TODO: Hack
+        self.__log_directory = os.path.join(
+            "~/vent/logs",
+            "{}.{}".format(
+                datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), self.controller.name
+            ),
+        )
+
+        if not os.path.exists(self.__log_directory):
+            os.makedirs(self.__log_directory)
+
+        self.controller.save(os.path.join(self.__log_directory, "controller.pkl"))
 
     def __del__(self):
         self.set_valves_standby()  # First set valves to default
@@ -754,9 +773,10 @@ class ControlModuleDevice(ControlModuleBase):
             self._DATA_VOLUME += dt * self._DATA_Qout
             self._DATA_PRESSURE = np.mean(self._DATA_PRESSURE_LIST)
 
-            self._ControlModuleBase__control_signal_in, self._ControlModuleBase__control_signal_out = self.controller.feed(
-                self._DATA_PRESSURE, now
-            )
+            (
+                self._ControlModuleBase__control_signal_in,
+                self._ControlModuleBase__control_signal_out,
+            ) = self.controller.feed(self._DATA_PRESSURE, now)
 
             cycle_phase = self.controller.cycle_phase(now)
 
@@ -772,7 +792,10 @@ class ControlModuleDevice(ControlModuleBase):
             if self._save_logs:
                 self._ControlModuleBase__save_values()
 
-            self._set_HAL(self._ControlModuleBase__control_signal_in, self._ControlModuleBase__control_signal_out)
+            self._set_HAL(
+                self._ControlModuleBase__control_signal_in,
+                self._ControlModuleBase__control_signal_out,
+            )
             if update_copies == 0:
                 self._controls_from_COPY()
                 self._sensor_to_COPY()
