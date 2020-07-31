@@ -1,3 +1,4 @@
+import sys
 import time
 from jupyterplot import ProgressPlot
 
@@ -24,13 +25,14 @@ class JupyterGUI:
         self.coordinator.start()
 
     def show(self, update_frequency=0.1):
-        pp = ProgressPlot()
+        pp = ProgressPlot(plot_names=["pressure", "u_in", "u_out"],
+                          line_names=["val"])
 
         try:
             while True:
                 vals = self.coordinator.get_sensors()
-                pp.update(vals["PRESSURE"])
+                pp.update([[vals["PRESSURE"]], [vals["FLOWOUT"]], [vals["FIO2"]]])
                 time.sleep(update_frequency)
         except KeyboardInterrupt:
             pp.finalize()
-            exit(1)
+            sys.exit(1)
