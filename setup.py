@@ -32,13 +32,22 @@ setup(
     install_requires=[
         "numpy",
         # "PySide2",
-        # "pyqtgraph>=0.11.0rc0",
+        "pyqtgraph",
         # "pytest-qt",
         # "pytest-timeout",
         "scipy",
         "pigpio",
         "tables"
     ],
+    extra_requires={
+        "control": [
+            "jupyter",
+            "jupyterplot",
+            "matplotlib",
+            "tqdm",
+            "pathos"
+        ]
+    },
     dependency_links=depend_links,
     python_requires="==3.7.*"
 )

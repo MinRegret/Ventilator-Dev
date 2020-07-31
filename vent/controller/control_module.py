@@ -95,7 +95,6 @@ class ControlModuleBase:
         self.__SET_PIP_GAIN = CONTROL[
             ValueName.PIP_TIME
         ].default  # Target time to reach PIP in seconds
-        print("set pip gain: ", self.__SET_PIP_GAIN)
         self.__SET_PEEP = CONTROL[ValueName.PEEP].default  # Target PEEP pressure
         self.__SET_PEEP_TIME = CONTROL[
             ValueName.PEEP_TIME
@@ -644,6 +643,8 @@ class ControlModuleDevice(ControlModuleBase):
             datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         )
 
+        print("Logging to {}".format(self.__log_directory))
+
         if not os.path.exists(self.__log_directory):
             os.makedirs(self.__log_directory)
 
@@ -781,7 +782,6 @@ class ControlModuleDevice(ControlModuleBase):
             u_in, u_out = self.controller.feed(self._DATA_PRESSURE, now)
             self._ControlModuleBase__control_signal_in = 0
             self._ControlModuleBase__control_signal_out = u_out
-            print(u_out, self._ControlModuleBase__control_signal_out)
 
             self._ControlModuleBase__test_for_alarms()
             if cycle_phase is None or cycle_phase > self.controller.cycle_phase(now):
