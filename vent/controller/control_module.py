@@ -95,6 +95,7 @@ class ControlModuleBase:
         self.__SET_PIP_GAIN = CONTROL[
             ValueName.PIP_TIME
         ].default  # Target time to reach PIP in seconds
+        print("set pip gain: ", self.__SET_PIP_GAIN)
         self.__SET_PEEP = CONTROL[ValueName.PEEP].default  # Target PEEP pressure
         self.__SET_PEEP_TIME = CONTROL[
             ValueName.PEEP_TIME
@@ -636,6 +637,20 @@ class ControlModuleDevice(ControlModuleBase):
         """
         ControlModuleBase.__init__(self, save_logs, flush_every)
 
+        # TODO: Hack
+        self.__log_directory = os.path.join(
+            os.path.expanduser("~"),
+            "vent/logs",
+            datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        )
+
+        if not os.path.exists(self.__log_directory):
+            os.makedirs(self.__log_directory)
+
+        self.dl.file = os.path.join(self.__log_directory, "environment.h5")
+        with pytb.open_file(self.dl.file, mode="a") as file:
+            self.dl.h5file = file
+
         waveform = BreathWaveform(
             (self._ControlModuleBase__SET_PEEP, self._ControlModuleBase__SET_PIP),
             [
@@ -645,7 +660,7 @@ class ControlModuleDevice(ControlModuleBase):
                 self._ControlModuleBase__SET_CYCLE_DURATION,
             ],
         )
-        self.controller = PredictiveBiasPI(waveform=waveform)
+        self.controller = OriginalPID(waveform=waveform, log_directory=self.__log_directory)
 
         self.HAL = io.Hal(config_file)
         self._sensor_to_COPY()
@@ -653,24 +668,6 @@ class ControlModuleDevice(ControlModuleBase):
         # Current settings of the valves to avoid unneccesary hardware queries
         self.current_setting_ex = self.HAL.setpoint_ex
         self.current_setting_in = self.HAL.setpoint_in
-
-        # TODO: Hack
-        self.__log_directory = os.path.join(
-            os.path.expanduser("~"),
-            "vent/logs",
-            "{}.{}".format(
-                datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), self.controller.name
-            ),
-        )
-        print(self.__log_directory)
-
-        if not os.path.exists(self.__log_directory):
-            os.makedirs(self.__log_directory)
-
-        self.dl.file = os.path.join(self.__log_directory, "environment.h5")
-        with pytb.open_file(self.dl.file, mode="a") as file:
-            self.dl.h5file = file
-        self.controller.save(os.path.join(self.__log_directory, "controller.pkl"))
 
     def __del__(self):
         self.set_valves_standby()  # First set valves to default
@@ -781,16 +778,14 @@ class ControlModuleDevice(ControlModuleBase):
             self._DATA_VOLUME += dt * self._DATA_Qout
             self._DATA_PRESSURE = np.mean(self._DATA_PRESSURE_LIST)
 
-            (
-                self._ControlModuleBase__control_signal_in,
-                self._ControlModuleBase__control_signal_out,
-            ) = self.controller.feed(self._DATA_PRESSURE, now)
-
+            u_in, u_out = self.controller.feed(self._DATA_PRESSURE, now)
+            self._ControlModuleBase__control_signal_in = 0
+            self._ControlModuleBase__control_signal_out = u_out
+            print(u_out, self._ControlModuleBase__control_signal_out)
 
             self._ControlModuleBase__test_for_alarms()
             if cycle_phase is None or cycle_phase > self.controller.cycle_phase(now):
                 self._ControlModuleBase__start_new_breathcycle()
-                self.controller.flush_log(os.path.join(self.__log_directory, "timeseries.pkl"))
             else:
                 self._ControlModuleBase__cycle_waveform = np.append(
                     self._ControlModuleBase__cycle_waveform,
