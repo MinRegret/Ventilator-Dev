@@ -26,7 +26,11 @@ class JupyterGUI:
     def show(self, update_frequency=0.1):
         pp = ProgressPlot()
 
-        while True:
-            vals = self.coordinator.get_sensors()
-            pp.update(vals["PRESSURE"])
-            time.sleep(update_frequency)
+        try:
+            while True:
+                vals = self.coordinator.get_sensors()
+                pp.update(vals["PRESSURE"])
+                time.sleep(update_frequency)
+        except KeyboardInterrupt:
+            pp.finalize()
+            exit(1)
