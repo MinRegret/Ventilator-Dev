@@ -15,7 +15,7 @@ from vent.coordinator.rpc import get_rpc_client
 
 
 class CoordinatorBase:
-    def __init__(self, sim_mode=False):
+    def __init__(self, sim_mode=False, **kwargs):
         # get_ui_control_module handles single_process flag
         # self.lock = threading.Lock()
         self.logger = init_logger(__name__)
@@ -57,7 +57,7 @@ class CoordinatorBase:
         pass
 
 class CoordinatorLocal(CoordinatorBase):
-    def __init__(self, sim_mode=False):
+    def __init__(self, sim_mode=False, **kwargs):
         """
 
         Args:
@@ -67,8 +67,8 @@ class CoordinatorLocal(CoordinatorBase):
             _is_running (:class:`threading.Event`): ``.set()`` when thread should stop
 
         """
-        super().__init__(sim_mode=sim_mode)
-        self.control_module = vent.controller.control_module.get_control_module(sim_mode)
+        super().__init__(sim_mode=sim_mode, **kwargs)
+        self.control_module = vent.controller.control_module.get_control_module(sim_mode, **kwargs)
 
 
     def get_sensors(self) -> SensorValues:
@@ -114,8 +114,8 @@ class CoordinatorLocal(CoordinatorBase):
 
 
 class CoordinatorRemote(CoordinatorBase):
-    def __init__(self, sim_mode=False):
-        super().__init__(sim_mode=sim_mode)
+    def __init__(self, sim_mode=False, **kwargs):
+        super().__init__(sim_mode=sim_mode, **kwargs)
         # TODO: according to documentation, pass max_heartbeat_interval?
         self.process_manager = ProcessManager(sim_mode)
         self.rpc_client = get_rpc_client()
@@ -174,8 +174,8 @@ class CoordinatorRemote(CoordinatorBase):
         self.stop()
 
 
-def get_coordinator(single_process=False, sim_mode=False) -> CoordinatorBase:
+def get_coordinator(single_process=False, sim_mode=False, **kwargs) -> CoordinatorBase:
     if single_process:
-        return CoordinatorLocal(sim_mode)
+        return CoordinatorLocal(sim_mode, **kwargs)
     else:
-        return CoordinatorRemote(sim_mode)
+        return CoordinatorRemote(sim_mode, **kwargs)

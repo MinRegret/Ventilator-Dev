@@ -1,3 +1,5 @@
+import datetime
+import os
 import sys
 import time
 from jupyterplot import ProgressPlot
@@ -10,8 +12,22 @@ from vent.coordinator.coordinator import get_coordinator
 
 
 class JupyterGUI:
-    def __init__(self):
-        self.coordinator = get_coordinator()
+    def __init__(self, **kwargs):
+        if "directory" not in kwargs:
+            kwargs["directory"] = os.path.join(
+            os.path.expanduser("~"),
+            "vent/logs/hazan",
+            datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        )
+
+        self.directory = kwargs["directory"]
+
+        print("Logging to {}".format(self.directory))
+
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
+
+        self.coordinator = get_coordinator(single_process=True, **kwargs)
 
         for key, val in CONTROL.items():
             control_setting = ControlSetting(name=key,
@@ -23,6 +39,9 @@ class JupyterGUI:
 
     def start(self):
         self.coordinator.start()
+
+    def stop(self):
+        self.coordinator.stop()
 
     def show(self, update_frequency=0.1):
         pp = ProgressPlot(plot_names=["pressure", "u_in", "u_out"],

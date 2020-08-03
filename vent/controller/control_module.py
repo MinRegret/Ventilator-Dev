@@ -51,7 +51,7 @@ class ControlModuleBase:
 
     """
 
-    def __init__(self, save_logs: bool = False, flush_every: int = 10):
+    def __init__(self, save_logs: bool = False, flush_every: int = 10, **kwargs):
         """
 
         Args:
@@ -629,26 +629,14 @@ class ControlModuleDevice(ControlModuleBase):
     """
 
     # Implement ControlModuleBase functions
-    def __init__(self, save_logs=True, flush_every=10, config_file=None):
+    def __init__(self, save_logs=True, flush_every=10, config_file=None, **kwargs):
         """
         Args:
             config_file (string): Path to device config file, e.g. 'vent/io/config/dinky-devices.ini'
         """
-        ControlModuleBase.__init__(self, save_logs, flush_every)
+        ControlModuleBase.__init__(self, save_logs, flush_every, **kwargs)
 
-        # TODO: Hack
-        self.__log_directory = os.path.join(
-            os.path.expanduser("~"),
-            "vent/logs",
-            datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        )
-
-        print("Logging to {}".format(self.__log_directory))
-
-        if not os.path.exists(self.__log_directory):
-            os.makedirs(self.__log_directory)
-
-        self.dl.file = os.path.join(self.__log_directory, "environment.h5")
+        self.dl.file = os.path.join(kwargs["directory"], "environment.h5")
         with pytb.open_file(self.dl.file, mode="a") as file:
             self.dl.h5file = file
 
@@ -661,7 +649,7 @@ class ControlModuleDevice(ControlModuleBase):
                 self._ControlModuleBase__SET_CYCLE_DURATION,
             ],
         )
-        self.controller = OriginalPID(waveform=waveform, log_directory=self.__log_directory)
+        self.controller = OriginalPID(waveform=waveform, log_directory=kwargs["directory"])
 
         self.HAL = io.Hal(config_file)
         self._sensor_to_COPY()
@@ -815,7 +803,7 @@ class ControlModuleDevice(ControlModuleBase):
         self.set_valves_standby()
 
 
-def get_control_module(sim_mode=False, simulator_dt=None):
+def get_control_module(sim_mode=False, simulator_dt=None, **kwargs):
     return ControlModuleDevice(
-        save_logs=True, flush_every=1, config_file="vent/io/config/devices.ini"
+        save_logs=True, flush_every=1, config_file=os.path.join(os.path.abspath(os.path.dirname(__file__)), "../io/config/devices.ini"), **kwargs
     )

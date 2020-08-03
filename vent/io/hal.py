@@ -2,6 +2,7 @@
 
 """
 
+import os
 from importlib import import_module
 from ast import literal_eval
 from .devices.sensors import Sensor
@@ -11,13 +12,15 @@ import vent.io.devices.valves as valves
 import configparser
 
 
+default_hal_config = os.path.join(os.path.abspath(os.path.dirname(__file__)), "config/devices.ini")
+
 class Hal:
     """ Hardware Abstraction Layer for ventilator hardware.
     Defines a common API for interacting with the sensors & actuators on the ventilator. The types of devices installed
     on the ventilator (real or simulated) are specified in a configuration file.
     """
 
-    def __init__(self, config_file='vent/io/config/devices.ini'):
+    def __init__(self, config_file=default_hal_config):
         """ Initializes HAL from config_file.
             For each section in config_file, imports the class <type> from module <module>, and sets attribute
             self.<section> = <type>(**opts), where opts is a dict containing all of the options in <section> that are
