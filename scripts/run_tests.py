@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 "exec" "`dirname $0`/../venv/bin/python" "$0" "$@"
 import os
+import sys
 import tqdm
 import click
 import pathos
@@ -49,8 +50,6 @@ def get_runner(prep_time, experiment_time, sleep_time):
 
         gui.stop()
         time.sleep(sleep_time)
-
-        return args
 
     return get_runner_inner
 
