@@ -20,12 +20,10 @@ class JupyterGUI:
             datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         )
 
-        self.directory = kwargs["directory"]
+        print("Logging to {}".format(kwargs["directory"]))
 
-        print("Logging to {}".format(self.directory))
-
-        if not os.path.exists(self.directory):
-            os.makedirs(self.directory)
+        if not os.path.exists(kwargs["directory"]):
+            os.makedirs(kwargs["directory"])
 
         self.coordinator = get_coordinator(single_process=True, **kwargs)
 

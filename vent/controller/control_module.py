@@ -499,7 +499,6 @@ class ControlModuleBase:
         """
         This has to be executed when the next breath cycles starts
         """
-        print("Starting new breath cycle")
         self._DATA_VOLUME = 0  # ... start at zero volume in the lung
         self._DATA_dpdt = 0  # and restart the rolling average for the dP/dt estimation
 
@@ -768,7 +767,7 @@ class ControlModuleDevice(ControlModuleBase):
             self._DATA_PRESSURE = np.mean(self._DATA_PRESSURE_LIST)
 
             u_in, u_out = self.controller.feed(self._DATA_PRESSURE, now)
-            self._ControlModuleBase__control_signal_in = 0
+            self._ControlModuleBase__control_signal_in = u_in
             self._ControlModuleBase__control_signal_out = u_out
 
             self._ControlModuleBase__test_for_alarms()
