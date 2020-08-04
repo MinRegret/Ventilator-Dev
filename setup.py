@@ -45,7 +45,8 @@ setup(
             "jupyterplot",
             "matplotlib",
             "tqdm",
-            "pathos"
+            "pathos",
+            "click"
         ]
     },
     dependency_links=depend_links,
