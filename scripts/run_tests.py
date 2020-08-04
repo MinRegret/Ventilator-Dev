@@ -21,7 +21,7 @@ def get_runner(prep_time, experiment_time, sleep_time):
         time.sleep(experiment_time)
 
         gui.stop()
-        time.sleep(sleep_tim)
+        time.sleep(sleep_time)
 
         return args
     return get_runner_inner
@@ -29,11 +29,13 @@ def get_runner(prep_time, experiment_time, sleep_time):
 
 # Generate the grid
 def gen_grid(**kwargs):
+    directory = kwargs["directory"]
     # TODO: fill out
-    for a in [1, 2, 3]:
-        for b in [2, 3, 4]:
+    for a in [1, 2]:
+        for b in [2, 3]:
             # TODO: update kwargs["directory"] for specific experimental run
             #       e.g., kwargs["directory"] += "/timestamp/run_name"
+            kwargs["directory"] = f"{directory}/hazan/{a}.{b}"
             kwargs.update({"a": a, "b": b})
             yield kwargs
 
@@ -50,7 +52,7 @@ def grid_size(generator):
 def main(prep_time, experiment_time, sleep_time, directory):
     runner = get_runner(prep_time, experiment_time, sleep_time)
     run = lambda: pathos.pools.ProcessPool(nodes=1).imap(runner, gen_grid(directory=directory))
-    total = grid_size(gen_grid())
+    total = grid_size(gen_grid(directory=directory))
     results = list(tqdm.tqdm(run(), total=total))
 
 
