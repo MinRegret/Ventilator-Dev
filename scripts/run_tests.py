@@ -4,6 +4,25 @@ import os
 import tqdm
 import click
 import pathos
+import datetime
+
+from lung.controllers import AdaPI
+from lung.controllers import PredictiveBiasPI
+from lung.controllers import PredictivePID
+
+def get_controllers(log_directory):
+    controllers = []
+    for p in [0.01, 0.1, 0.3, 0.5, 1.0]:
+        for i in [0.1, 0.5, 1.0, 1.5, 2.0]:
+            for rc in [0.06, 0.3]:
+                for lookahead_steps in [0, 15]:
+                    controllers.append(AdaPI(p=p, i=i, RC=rc, lookahead_steps=lookahead_steps, log_directory=log_directory))
+                    controllers.append(PredictiveBiasPI(p=p, i=i, RC=rc, lookahead_steps=lookahead_steps, log_directory=log_directory))
+
+    controllers.append(PredictivePID(hallucination_length=0, log_directory=log_directory))
+    controllers.append(PredictivePID(hallucination_length=15, log_directory=log_directory))
+
+    return controllers
 
 def get_runner(prep_time, experiment_time, sleep_time):
     def get_runner_inner(args):
@@ -30,14 +49,15 @@ def get_runner(prep_time, experiment_time, sleep_time):
 # Generate the grid
 def gen_grid(**kwargs):
     directory = kwargs["directory"]
-    # TODO: fill out
-    for a in [1, 2]:
-        for b in [2, 3]:
-            # TODO: update kwargs["directory"] for specific experimental run
-            #       e.g., kwargs["directory"] += "/timestamp/run_name"
-            kwargs["directory"] = f"{directory}/hazan/{a}.{b}"
-            kwargs.update({"a": a, "b": b})
-            yield kwargs
+    controllers = get_controllers(directory)
+
+    for pip in [15, 25, 35]:
+        for peep in [5, 10]:
+            for controller in controllers:
+                timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+                kwargs["directory"] = f"{directory}/hazan/{timestamp}"
+                kwargs.update({"pip": pip, "peep": peep, "controller": controller})
+                yield kwargs
 
 
 def grid_size(generator):
@@ -52,6 +72,8 @@ def grid_size(generator):
 def main(prep_time, experiment_time, sleep_time, directory):
     runner = get_runner(prep_time, experiment_time, sleep_time)
     run = lambda: pathos.pools.ProcessPool(nodes=1).imap(runner, gen_grid(directory=directory))
+
+    # Lol...we redo a lot of work here...
     total = grid_size(gen_grid(directory=directory))
     results = list(tqdm.tqdm(run(), total=total))
 
