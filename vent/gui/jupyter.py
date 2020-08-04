@@ -2,6 +2,7 @@ import datetime
 import os
 import sys
 import time
+import pickle
 from jupyterplot import ProgressPlot
 
 import vent
@@ -15,24 +16,28 @@ class JupyterGUI:
     def __init__(self, **kwargs):
         if "directory" not in kwargs:
             kwargs["directory"] = os.path.join(
-            os.path.expanduser("~"),
-            "vent/logs/hazan",
-            datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        )
+                os.path.expanduser("~"),
+                "vent/logs/hazan",
+                datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            )
 
         print("Logging to {}".format(kwargs["directory"]))
 
         if not os.path.exists(kwargs["directory"]):
             os.makedirs(kwargs["directory"])
 
+        pickle.dump(kwargs, open(os.path.join(kwargs["directory"], "kwargs.pkl"), "wb"))
+
         self.coordinator = get_coordinator(single_process=True, **kwargs)
 
         for key, val in CONTROL.items():
-            control_setting = ControlSetting(name=key,
-                                             value=val.default,
-                                             min_value=val.safe_range[0],
-                                             max_value=val.safe_range[1],
-                                             timestamp=time.time())
+            control_setting = ControlSetting(
+                name=key,
+                value=val.default,
+                min_value=val.safe_range[0],
+                max_value=val.safe_range[1],
+                timestamp=time.time(),
+            )
             self.coordinator.set_control(control_setting)
 
     def start(self):
@@ -42,8 +47,7 @@ class JupyterGUI:
         self.coordinator.stop()
 
     def show(self, update_frequency=0.1):
-        pp = ProgressPlot(plot_names=["pressure", "u_in", "u_out"],
-                          line_names=["val"])
+        pp = ProgressPlot(plot_names=["pressure", "u_in", "u_out"], line_names=["val"])
 
         try:
             while True:

@@ -638,7 +638,8 @@ class ControlModuleDevice(ControlModuleBase):
         self.dl.file = os.path.join(kwargs["directory"], "environment.h5")
         with pytb.open_file(self.dl.file, mode="a") as file:
             self.dl.h5file = file
-
+        self._ControlModuleBase__SET_PEEP = kwargs["peep"]
+        self._ControlModuleBase__SET_PIP = kwargs["pip"]
         waveform = BreathWaveform(
             (self._ControlModuleBase__SET_PEEP, self._ControlModuleBase__SET_PIP),
             [
@@ -648,7 +649,9 @@ class ControlModuleDevice(ControlModuleBase):
                 self._ControlModuleBase__SET_CYCLE_DURATION,
             ],
         )
-        self.controller = OriginalPID(waveform=waveform, log_directory=kwargs["directory"])
+        self.controller = kwargs["controller"]
+        self.controller.waveform = waveform
+        # self.controller = OriginalPID(waveform=waveform, log_directory=kwargs["directory"])
 
         self.HAL = io.Hal(config_file)
         self._sensor_to_COPY()
