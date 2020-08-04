@@ -57,16 +57,18 @@ def get_runner(prep_time, experiment_time, sleep_time):
 
 # Generate the grid
 def gen_grid(**kwargs):
-    directory = kwargs["directory"]
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    directory = kwargs["directory"] + f"/{timestamp}"
     controllers = get_controllers()
+    job_id = 0
 
     for pip in [15, 25, 35]:
         for peep in [5, 10]:
             for controller in controllers:
-                timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-                kwargs["directory"] = f"{directory}/{timestamp}"
+                kwargs["directory"] = f"{directory}/{job_id}"
                 controller.set_log_directory(kwargs["directory"])
-                kwargs.update({"pip": pip, "peep": peep, "controller": controller})
+                kwargs.update({"job_id": job_id, "pip": pip, "peep": peep, "controller": controller})
+                job_id += 1
                 yield kwargs
 
 
