@@ -28,10 +28,14 @@ def get_runner(prep_time, experiment_time, sleep_time):
 
 
 # Generate the grid
-def gen_grid():
+def gen_grid(**kwargs):
+    # TODO: fill out
     for a in [1, 2, 3]:
         for b in [2, 3, 4]:
-            yield {"a": a, "b": b}
+            # TODO: update kwargs["directory"] for specific experimental run
+            #       e.g., kwargs["directory"] += "/timestamp/run_name"
+            kwargs.update({"a": a, "b": b})
+            yield kwargs
 
 
 def grid_size(generator):
@@ -42,10 +46,10 @@ def grid_size(generator):
 @click.option("--prep-time", default=10, type=int, help="Time to kill/restart pigpiod")
 @click.option("--experiment-time", default=30, type=int, help="Time to run experiment")
 @click.option("--sleep-time", default=20, type=int, help="Time to give lung a breather")
-@click.option("-o", "--output-directory", default=os.path.join(os.path.expanduser("~"), "vent/logs"), type=str, help="Directory for this series of runs")
-def main(prep_time, experiment_time, sleep_time, output_directory):
+@click.option("-o", "--directory", default=os.path.join(os.path.expanduser("~"), "vent/logs"), type=str, help="Directory for this series of runs")
+def main(prep_time, experiment_time, sleep_time, directory):
     runner = get_runner(prep_time, experiment_time, sleep_time)
-    run = lambda: pathos.pools.ProcessPool(nodes=1).imap(runner, gen_grid())
+    run = lambda: pathos.pools.ProcessPool(nodes=1).imap(runner, gen_grid(directory=directory))
     total = grid_size(gen_grid())
     results = list(tqdm.tqdm(run(), total=total))
 
