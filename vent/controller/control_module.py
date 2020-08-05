@@ -640,6 +640,11 @@ class ControlModuleDevice(ControlModuleBase):
             self.dl.h5file = file
         self._ControlModuleBase__SET_PEEP = kwargs["peep"]
         self._ControlModuleBase__SET_PIP = kwargs["pip"]
+        self._ControlModuleBase__SET_BPM = kwargs["bpm"]
+        self._ControlModuleBase__SET_CYCLE_DURATION = 60 / kwargs["bpm"]
+        self._ControlModuleBase__SET_E_PHASE = self._ControlModuleBase__SET_CYCLE_DURATION - self._ControlModuleBase__SET_I_PHASE
+        self._ControlModuleBase__SET_T_PEEP = self._ControlModuleBase__SET_E_PHASE - self._ControlModuleBase__SET_PEEP_TIME
+
         waveform = BreathWaveform(
             (self._ControlModuleBase__SET_PEEP, self._ControlModuleBase__SET_PIP),
             [
@@ -649,6 +654,7 @@ class ControlModuleDevice(ControlModuleBase):
                 self._ControlModuleBase__SET_CYCLE_DURATION,
             ],
         )
+        print(waveform.fp, waveform.xp)
         self.controller = kwargs["controller"]
         self.controller.waveform = waveform
         # self.controller = OriginalPID(waveform=waveform, log_directory=kwargs["directory"])

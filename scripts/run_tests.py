@@ -14,10 +14,11 @@ from lung.controllers import PredictivePID
 
 def get_controllers():
     controllers = []
-    for p in [0.01, 0.3, 1.0]:
-        for i in [0.1, 1.5, 2.0]:
-            for rc in [0.06, 0.3]:
-                for lookahead_steps in [0, 15]:
+    for lookahead_steps in [0, 15]:
+        controllers.append(PredictivePID(lookahead_steps=lookahead_steps))
+        for p in [0.01, 0.3, 1.0]:
+            for i in [0.1, 1.5, 2.0]:
+                for rc in [0.06, 0.3]:
                     controllers.append(
                         AdaPI(p=p, i=i, RC=rc, lookahead_steps=lookahead_steps,)
                     )
@@ -26,9 +27,6 @@ def get_controllers():
                             p=p, i=i, RC=rc, lookahead_steps=lookahead_steps,
                         )
                     )
-
-    controllers.append(PredictivePID(hallucination_length=0))
-    controllers.append(PredictivePID(hallucination_length=15))
 
     return controllers
 
@@ -63,16 +61,28 @@ def gen_grid(**kwargs):
 
     for pip in [15, 25, 35]:
         for peep in [5, 10]:
-            for controller in controllers:
-                kwargs["directory"] = f"{directory}/{job_id}"
-                controller.set_log_directory(kwargs["directory"])
-                kwargs.update({"job_id": job_id, "pip": pip, "peep": peep, "controller": controller})
-                job_id += 1
-                yield kwargs
+            for bpm in [12, 20]:
+                for controller in controllers:
+                    kwargs["directory"] = f"{directory}/{job_id}"
+                    controller.set_log_directory(kwargs["directory"])
+                    kwargs.update(
+                        {
+                            "job_id": job_id,
+                            "pip": pip,
+                            "peep": peep,
+                            "bpm": bpm,
+                            "pip_time": 1e-8,
+                            "inspiration_time": 1.0,
+                            "peep_time": 0.5,
+                            "controller": controller,
+                        }
+                    )
+                    job_id += 1
+                    yield kwargs
 
 
 def grid_size(generator):
-    return sum(1 for blah in generator)
+    return sum(1 for _ in generator)
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))

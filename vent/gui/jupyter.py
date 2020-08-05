@@ -27,13 +27,28 @@ class JupyterGUI:
             os.makedirs(kwargs["directory"])
 
         pickle.dump(kwargs, open(os.path.join(kwargs["directory"], "kwargs.pkl"), "wb"))
+        print(kwargs)
 
         self.coordinator = get_coordinator(single_process=True, **kwargs)
 
         for key, val in CONTROL.items():
+            value = val.default
+            if key == ValueName.PIP_TIME:
+                value = kwargs["pip_time"]
+            elif key == ValueName.INSPIRATION_TIME_SEC:
+                value = kwargs["inspiration_time"]
+            elif key == ValueName.PIP:
+                value = kwargs["pip"]
+            elif key == ValueName.PEEP:
+                value = kwargs["peep"]
+            elif key == ValueName.PEEP_TIME:
+                value = kwargs["peep_time"]
+            elif key == ValueName.BREATHS_PER_MINUTE:
+                value = kwargs["bpm"]
+
             control_setting = ControlSetting(
                 name=key,
-                value=val.default,
+                value=value,
                 min_value=val.safe_range[0],
                 max_value=val.safe_range[1],
                 timestamp=time.time(),
