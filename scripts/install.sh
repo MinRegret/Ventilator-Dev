@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
 
-sudo apt-get install libatlas-base-dev gfortran
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# Install PySide2
-# https://bugreports.qt.io/browse/PYSIDE-802
-pip install virtualenv
+sudo apt-get install -y libatlas-base-dev gfortran libffi-dev python3-h5py i2c-tools python-smbus libi2c-dev
+sudo adduser pi i2c
 
-virtualenv venv
+sudo $DIR/scripts/i2c.sh
 
-source venv/bin/activate
+#pip3 install virtualenv
+#/home/pi/.local/bin/virtualenv venv
+#source venv/bin/activate
 
-pip install -e .
-pip install jupyter ipython tqdm matplotlib external/*.whl
+pip3 install -e .
+pip3 install jupyter ipython tqdm matplotlib external/*.whl
 sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
-
-pushd lung
-pip install -e .
-popd
