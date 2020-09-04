@@ -21,7 +21,7 @@ if ret == 0:
 
 
 setup(
-    name="pvp",
+    name="vent",
     author="vent team",
     author_email="vent@vents.com",
     description="some description of how we made a ventilator",
