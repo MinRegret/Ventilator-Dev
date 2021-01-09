@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-sudo apt-get install -y python3 python3-pip python3-setuptools libatlas-base-dev gfortran libffi-dev i2c-tools python-smbus libi2c-dev pigpio
+sudo apt-get install -y pigpio
 sudo adduser pi i2c
 
 sudo $DIR/i2c.sh

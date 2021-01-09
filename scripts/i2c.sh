@@ -48,5 +48,5 @@ echo '>>> Install i2c-tools'
 if hash i2cget 2>/dev/null; then
   echo 'Seems i2c-tools is installed already, skip this step.'
 else
-  apt-get install -y i2c-tools
+  apt-get install -y i2c-tools libi2c-dev libffi-dev python-smbus
 fi
