@@ -37,7 +37,7 @@ class Hal:
                         class_ = getattr(import_module('.devices', 'vent.io'), 'ADS1115')
 
                 2) Instantiate an ADS1115 object with the arguments defined in config_file and set it as an attribute:
-                        self._adc = class_(pig=self.-pig,address=0x48,i2c_bus=1)
+                        self._adc = class_(gpio=self._gpio,address=0x48,i2c_bus=1)
 
             Note: RawConfigParser.optionxform() is overloaded here s.t. options are case sensitive (they are by default
             case insensitive). This is necessary due to the kwarg MUX which is so named for consistency with the config
@@ -45,7 +45,7 @@ class Hal:
             of the ADC is passed arguments like:
 
             analog_sensor = AnalogSensor(
-                pig=self._gpio,
+                _ig=self._gpio,
                 adc=self._adc,
                 MUX=0,
                 offset_voltage=0.25,
@@ -82,7 +82,7 @@ class Hal:
                 device_name=section,
                 device_options=opts
             ))  # debug
-            setattr(self, '_' + section, class_(pig=self._gpio, **opts))
+            setattr(self, '_' + section, class_(gpio=self._gpio, **opts))
 
     # TODO: Need exception handling whenever inlet valve is opened
 

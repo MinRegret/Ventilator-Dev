@@ -45,14 +45,14 @@ class IODeviceBase:
     restart it, and reopen the python interface(s)
     """
 
-    def __init__(self, pig: PigpioConnection = None):
+    def __init__(self, gpio: PigpioConnection = None):
         """ Initializes the pigpio python bindings object if necessary,
         and checks that it is actually running.
 
         Args:
-            pig (PigpioConnection): pigpiod connection to use; if not specified, a new one is established
+            gpio (PigpioConnection): pigpiod connection to use; if not specified, a new one is established
         """
-        self._gpio = pig if pig is not None else PigpioConnection(show_errors=False)
+        self._gpio = gpio if gpio is not None else PigpioConnection(show_errors=False)
         self._handle = -1
 
     @property
@@ -364,7 +364,7 @@ class ADS1115(I2CDevice):
     want to extend the functionality implemented here.
     """
 
-    def __init__(self, address=_DEFAULT_ADDRESS, i2c_bus=1, pig=None):
+    def __init__(self, address=_DEFAULT_ADDRESS, i2c_bus=1, gpio=None):
         """ Initializes registers: Pointer register is write only,
         config is R/W. Sets initial value of _last_cfg to what is
         actually on the ADS.Packs default settings into _cfg, but does
@@ -374,9 +374,9 @@ class ADS1115(I2CDevice):
         Args:
             address (int): I2C address of the device. (e.g., `i2c_address=0x48`)
             i2c_bus (int): The I2C bus to use. Should probably be set to 1 on Raspberry Pi.
-            pig (PigpioConnection): pigpiod connection to use; if not specified, a new one is established
+            gpio (PigpioConnection): pigpiod connection to use; if not specified, a new one is established
         """
-        super().__init__(address, i2c_bus, pig)
+        super().__init__(address, i2c_bus, gpio)
         self.pointer = self.Register(self._POINTER_FIELDS, self._POINTER_VALUES)
         self._config = self.Register(self._CONFIG_FIELDS, self._CONFIG_VALUES)
         self._last_cfg = self._read_last_cfg()
@@ -527,10 +527,10 @@ class ADS1015(ADS1115):
     )
     USER_CONFIGURABLE_FIELDS = ('MUX', 'PGA', 'MODE', 'DR')
 
-    def __init__(self, address=_DEFAULT_ADDRESS, i2c_bus=1, pig=None):
+    def __init__(self, address=_DEFAULT_ADDRESS, i2c_bus=1, gpio=None):
         """ See: vent.io.devices.ADS1115.__init__
         """
-        super().__init__(address=address, i2c_bus=i2c_bus, pig=pig)
+        super().__init__(address=address, i2c_bus=i2c_bus, gpio=gpio)
 
 
 def be16_to_native(data, signed=False) -> int:
