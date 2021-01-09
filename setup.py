@@ -31,10 +31,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         "numpy",
-        # "PySide2",
-        "pyqtgraph",
-        # "pytest-qt",
-        # "pytest-timeout",
         "scipy",
         "pigpio",
         "tables"
@@ -42,7 +38,6 @@ setup(
     extra_requires={
         "control": [
             "jupyter",
-            "jupyterplot",
             "matplotlib",
             "tqdm",
             "pathos",
