@@ -10,8 +10,8 @@ class DelayLung(Environment):
         # dynamics hyperparameters
         self.params = {
             "min_volume": 1.5,
-            "R_vent": 10,
-            "C_vent": 6,
+            "R_lung": 10,
+            "C_lung": 6,
             "delay": 25,
             "inertia": 0.995,
             "control_gain": 0.02,
@@ -36,7 +36,7 @@ class DelayLung(Environment):
         # compute all other state vars, which are just functions of volume
         r = (3 * self.volume / (4 * np.pi)) ** (1 / 3)
         r0 = (3 * self.params["min_volume"] / (4 * np.pi)) ** (1 / 3)
-        self.vent_pressure = self.params["C_vent"] * (1 - (r0 / r) ** 6) / (r0 ** 2 * r)
+        self.vent_pressure = self.params["C_lung"] * (1 - (r0 / r) ** 6) / (r0 ** 2 * r)
 
         if len(self.controls_in) < self.params["delay"]:
             self.pipe_impulse = 0
@@ -62,7 +62,7 @@ class DelayLung(Environment):
         dt = self.dt
 
         # 2-dimensional action per timestep
-        flow = self.pressure / self.params["R_vent"]
+        flow = self.pressure / self.params["R_lung"]
 
         # update by flow rate
         self.volume += flow * dt
