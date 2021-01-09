@@ -20,7 +20,7 @@ class Hal:
     on the ventilator (real or simulated) are specified in a configuration file.
     """
 
-    def __init__(self, config_file=default_hal_config):
+    def __init__(self, host="localhost", port=8888, config_file=default_hal_config):
         """ Initializes HAL from config_file.
             For each section in config_file, imports the class <type> from module <module>, and sets attribute
             self.<section> = <type>(**opts), where opts is a dict containing all of the options in <section> that are
@@ -65,7 +65,7 @@ class Hal:
         self._control_valve = object
         self._expiratory_valve = object
         self._pressure_sensor = object
-        self._gpio = object
+        self._gpio = PigpioConnection(host=host, port=port, show_errors=False)
         self.config = configparser.RawConfigParser()
         self.config.optionxform = lambda option: option
         self.config.read(config_file)
