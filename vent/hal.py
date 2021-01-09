@@ -45,7 +45,7 @@ class Hal:
             of the ADC is passed arguments like:
 
             analog_sensor = AnalogSensor(
-                pig=self._pig,
+                pig=self._gpio,
                 adc=self._adc,
                 MUX=0,
                 offset_voltage=0.25,
@@ -62,14 +62,10 @@ class Hal:
         self._setpoint_in = 0.0  # setpoint for inspiratory side
         self._setpoint_ex = 0.0  # setpoint for expiratory side
         self._adc = object
-        self._inlet_valve = object
         self._control_valve = object
         self._expiratory_valve = object
         self._pressure_sensor = object
-        self._aux_pressure_sensor = object
-        self._flow_sensor_in = object
-        self._flow_sensor_ex = object
-        self._pig = PigpioConnection(show_errors=False)
+        self._gpio = PigpioConnection(show_errors=False)
         self.config = configparser.RawConfigParser()
         self.config.optionxform = lambda option: option
         self.config.read(config_file)
@@ -86,7 +82,7 @@ class Hal:
                 device_name=section,
                 device_options=opts
             ))  # debug
-            setattr(self, '_' + section, class_(pig=self._pig, **opts))
+            setattr(self, '_' + section, class_(pig=self._gpio, **opts))
 
     # TODO: Need exception handling whenever inlet valve is opened
 
@@ -95,33 +91,6 @@ class Hal:
         """ Returns the pressure from the primary pressure sensor.
         """
         return self._pressure_sensor.get()
-
-    
-    @property
-    def oxygen(self) -> float:
-        """ Returns the oxygen concentration from the primary oxygen sensor.
-        """
-        return self._oxygen_sensor.get()
-
-    @property
-    def aux_pressure(self) -> float:
-        """ Returns the pressure from the auxiliary pressure sensor, if so equipped.
-        If a secondary pressure sensor is not defined, raises a RuntimeWarning.
-        """
-        if isinstance(self._aux_pressure_sensor, Sensor):
-            return self._aux_pressure_sensor.get()
-        else:
-            raise RuntimeWarning('Secondary pressure sensor not instantiated. Check your "devices.ini" file.')
-
-    @property
-    def flow_in(self) -> float:
-        """ The measured flow rate inspiratory side."""
-        return self._flow_sensor_in.get()
-
-    @property
-    def flow_ex(self) -> float:
-        """ The measured flow rate expiratory side."""
-        return self._flow_sensor_ex.get()
 
     @property
     def setpoint_in(self) -> float:
@@ -137,10 +106,6 @@ class Hal:
         """
         if not 0 <= value <= 100:
             raise ValueError('setpoint must be a number between 0 and 100')
-        if value > 0 and not self._inlet_valve.is_open:
-            self._inlet_valve.open()
-        elif value == 0 and self._inlet_valve.is_open:
-            self._inlet_valve.close()
         self._control_valve.setpoint = value
         self._setpoint_in = value
 
@@ -157,20 +122,14 @@ class Hal:
             value (float): Requested flow, as a proportion of maximum. Must be either 0 or 1 for OnOffValve, and between
                 0 and 1 for a (proportional) control valve.
         """
-        if (
-                isinstance(self._expiratory_valve, valves.OnOffValve) or
-                isinstance(self._expiratory_valve, valves.SimOnOffValve)
-        ):
+        if isinstance(self._expiratory_valve, valves.OnOffValve):
             if value not in (0, 1):
                 raise ValueError('setpoint must be either 0 or 1 for an On/Off expiratory valve')
             elif value == 1:
                 self._expiratory_valve.open()
             else:
                 self._expiratory_valve.close()
-        elif (
-                isinstance(self._expiratory_valve, valves.PWMControlValve) or
-                isinstance(self._expiratory_valve, valves.SimControlValve)
-        ):
+        elif isinstance(self._expiratory_valve, valves.PWMControlValve):
             if not 0 <= value <= 100:
                 raise ValueError('setpoint must be between 0 and 100 for an expiratory control valve')
             else:

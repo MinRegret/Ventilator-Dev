@@ -147,7 +147,7 @@ class AnalogSensor(Sensor):
             raise TypeError(
                 'User must specify MUX for AnalogSensor creation'
             )
-        kwargs = {key: kwargs[key] for key in kwargs.keys() - ('pig',)}
+        kwargs = {key: kwargs[key] for key in kwargs.keys() - ('gpio',)}
         self._check_and_set_attr(**kwargs)
 
     def calibrate(self, **kwargs):
@@ -261,42 +261,6 @@ class AnalogSensor(Sensor):
         self._fill_attr()
 
 
-class DLiteSensor(AnalogSensor):
-    """ D-Lite flow sensor setup.
-    This consists of the GE D-Lite sensor configured with
-    vacuum lines running to an analog differential pressure sensor.
-
-    """
-    def __init__(self, adc, **kwargs):
-
-        super().__init__(adc, **kwargs)
-
-    def _convert(self, raw) -> float:
-        """ Converts the raw differential voltage signal to
-        a measurement of flow in liters-per-minute (LPM).
-        
-        We calibrate the D-Lite flow readings using the
-        (pre-calibrated) Sensirion flow sensor (see SFM3200). 
-
-        Args:
-            raw (float): The raw sensor reading to convert.
-        """
-        raw = super()._convert(raw)
-        fit_param = 2.5837e-05
-        if(raw >= 0):
-            #converted_flow = (-1.0*np.sqrt(raw)/np.sqrt(fit_param))
-            converted_flow = 192.6426*(raw)**(1/1.9128)
-        else:
-            converted_flow = -192.6426*(np.abs(raw))**(1/1.9128)
-        return converted_flow
-        
-    def calibrate(self, **kwargs):
-        """ Do not run a calibration routine.
-        Overrides attempt to calibrate. 
-        """
-        return
-
-
 class SFM3200(Sensor, I2CDevice):
     """ I2C Inspiratory flow sensor manufactured by Sensirion AG. Range: +/- 250 SLM
     Datasheet:
@@ -307,14 +271,14 @@ class SFM3200(Sensor, I2CDevice):
     _FLOW_OFFSET = 32768
     _FLOW_SCALE_FACTOR = 120
 
-    def __init__(self, address=_DEFAULT_ADDRESS, i2c_bus=1, pig=None):
+    def __init__(self, address=_DEFAULT_ADDRESS, i2c_bus=1, gpio=None):
         """
         Args:
             address (int): The I2C Address of the SFM3200 (usually 0x40)
             i2c_bus (int): The I2C Bus to use (usually `1` on the Raspberry Pi)
-            pig (PigpioConnection): pigpiod connection to use; if not specified, a new one is established
+            gpio (PigpioConnection): pigpiod connection to use; if not specified, a new one is established
         """
-        I2CDevice.__init__(self, address, i2c_bus, pig)
+        I2CDevice.__init__(self, address, i2c_bus, gpio)
         Sensor.__init__(self)
         self.reset()
         self._start()
@@ -359,38 +323,3 @@ class SFM3200(Sensor, I2CDevice):
         implement in future), and returns a signed int converted from the big endian two complement that remains.
         """
         return be16_to_native(self.read_device(4))
-
-
-class SimSensor(Sensor):
-    def __init__(self, low=0, high=100, pig=None):
-        """ TODO
-        Stub simulated sensor.
-
-        Args:
-            low: Lower-bound of possible sensor values
-            high: Upper-bound of possible sensor values
-            pig (PigpioConnection): Ignored.
-        """
-        super().__init__()
-        self.low = low
-        self.high = high
-
-    def _verify(self, value) -> bool:
-        """ Usually verifies sensor readings but occasionally misbehaves.
-
-        Args:
-            value (float): The sensor reading to verify
-        """
-        return True
-
-    def _convert(self, raw) -> float:
-        """ Does nothing for a simulated sensor. Returns what it is passed.
-
-        Args:
-            raw (float): The raw value to convert
-        """
-        return raw
-
-    def _raw_read(self) -> float:
-        """ Initializes randomly, otherwise does a random walk-ish thing."""
-        return self.low + random.random() * self.high

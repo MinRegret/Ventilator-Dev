@@ -8,7 +8,7 @@ import time
 import pigpio
 
 
-def pigpio_command(func):
+def gpio_command(func):
     @functools.wraps(func)
     def exception_catcher(self, *args, **kwargs):
         result = None
@@ -52,13 +52,13 @@ class IODeviceBase:
         Args:
             pig (PigpioConnection): pigpiod connection to use; if not specified, a new one is established
         """
-        self._pig = pig if pig is not None else PigpioConnection(show_errors=False)
+        self._gpio = pig if pig is not None else PigpioConnection(show_errors=False)
         self._handle = -1
 
     @property
-    def pig(self) -> PigpioConnection:
+    def gpio(self) -> PigpioConnection:
         """ The pigpio python bindings object"""
-        return self._pig
+        return self._gpio
 
     @property
     def handle(self) -> int:
@@ -68,11 +68,11 @@ class IODeviceBase:
     @property
     def pigpiod_ok(self) -> bool:
         """ Returns True if pigpiod is running and False if not"""
-        return self.pig.connected
+        return self.gpio.connected
 
     def _close(self):
         """ Closes an I2C/SPI (or potentially Serial) connection"""
-        if not self.pigpiod_ok or self.handle <= 0:
+        if not self.gpiopiod_ok or self.handle <= 0:
             return
 
 
@@ -104,20 +104,20 @@ class I2CDevice(IODeviceBase):
         self._i2c_bus = i2c_bus
         self._open(i2c_bus, i2c_address)
 
-    @pigpio_command
+    @gpio_command
     def _open(self, i2c_bus, i2c_address):
         """ Opens i2c connection given i2c bus and address."""
-        self._handle = self.pig.i2c_open(i2c_bus, i2c_address)
+        self._handle = self.gpio.i2c_open(i2c_bus, i2c_address)
 
-    @pigpio_command
+    @gpio_command
     def _close(self):
         """ Extends superclass method. Checks that pigpiod is connected
         and if a handle has been set - if so, closes an i2c connection.
         """
         super()._close()
-        self.pig.i2c_close(self.handle)
+        self.gpio.i2c_close(self.handle)
 
-    @pigpio_command
+    @gpio_command
     def read_device(self, count=2) -> tuple:
         """ Read a specified number of bytes directly from the the device without specifying or changing the register.
         Does NOT perform LE/BE conversion.
@@ -129,9 +129,9 @@ class I2CDevice(IODeviceBase):
             tuple: a tuple of the number of bytes read and a bytearray containing the bytes. If there was an error the
             number of bytes read will be less than zero (and will contain the error code).
         """
-        return self.pig.i2c_read_device(self.handle, count)
+        return self.gpio.i2c_read_device(self.handle, count)
 
-    @pigpio_command
+    @gpio_command
     def write_device(self, word, signed=False):
         """ Write 2 bytes to the device without specifying register. DOES perform LE/BE conversion.
 
@@ -139,12 +139,12 @@ class I2CDevice(IODeviceBase):
             word (int): The integer representation of the data to write.
             signed (bool): Whether or not `word` is signed.
         """
-        self.pig.i2c_write_device(
+        self.gpio.i2c_write_device(
             self.handle,
             native16_to_be(word, signed=signed)
         )
 
-    @pigpio_command
+    @gpio_command
     def read_register(self, register, signed=False) -> int:
         """ Read 2 bytes from the specified register and byteswap the result.
 
@@ -155,13 +155,13 @@ class I2CDevice(IODeviceBase):
         Returns:
             int: integer representation of 16 bit register contents.
         """
-        return be16_to_native(self.pig.i2c_read_i2c_block_data(
+        return be16_to_native(self.gpio.i2c_read_i2c_block_data(
             self.handle,
             register,
             count=2
         ), signed=signed)
 
-    @pigpio_command
+    @gpio_command
     def write_register(self, register, word, signed=False):
         """ Write 2 bytes to the specified register. Byteswaps.
 
@@ -170,7 +170,7 @@ class I2CDevice(IODeviceBase):
             word (int): The unsigned 16 bit integer to write to the register (must be consistent with 'signed')
             signed (bool): Whether or not 'word' is signed
         """
-        self.pig.i2c_write_i2c_block_data(
+        self.gpio.i2c_write_i2c_block_data(
             self.handle,
             register,
             native16_to_be(word, signed=signed)
@@ -305,39 +305,6 @@ class I2CDevice(IODeviceBase):
                 if value not in self._values.keys():
                     raise ValueError("ValueField must be one of: {}".format(self._values.keys()))
                 return (cfg & ~(self._mask << self._offset)) | (self._values[value] << self._offset)
-
-
-class SPIDevice(IODeviceBase):
-    """ A class wrapper for pigpio SPI handles. Not really implemented. """
-
-    def __init__(self, channel, baudrate, pig=None):
-        """ Instantiates an SPIDevice on SPI `channel` with `baudrate` and, optionally, `pigpio.pi = pig`.
-
-        Args:
-            channel (int): The SPI channel
-            baudrate (int): SPI baudrate
-            pig (PigpioConnection): pigpiod connection to use; if not specified, a new one is established
-        """
-        super().__init__(pig=pig)
-        self._open(channel, baudrate)
-
-    @pigpio_command
-    def _open(self, channel, baudrate):
-        """ Opens an SPI connection and sets the pigpiod handle.
-
-        Args:
-            channel (int): The SPI channel
-            baudrate (int): SPI baudrate
-        """
-        self._handle = self.pig.spi_open(channel, baudrate)
-
-    @pigpio_command
-    def _close(self):
-        """ Extends superclass method. Checks that pigpiod is connected and if a handle has been set - if so, closes an
-        SPI connection.
-        """
-        super()._close()
-        self.pig.spi_close(self.handle)
 
 
 class ADS1115(I2CDevice):
