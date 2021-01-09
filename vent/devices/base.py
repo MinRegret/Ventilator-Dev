@@ -21,54 +21,6 @@ def gpio_command(func):
     return exception_catcher
 
 
-class GPIOConnection:
-    @property
-    def connected(self):
-        raise NotImplementedError
-
-    def read(self, pin):
-        raise NotImplementedError
-
-    def write(self, pin, value):
-        raise NotImplementedError
-
-    def get_PWM_frequency(self, pin):
-        raise NotImplementedError
-
-    def set_PWM_frequency(self, pin, frequency):
-        raise NotImplementedError
-
-    def get_PWM_duty_cycle(self, pin):
-        raise NotImplementedError
-
-    def set_PWM_duty_cycle(self, pin, duty):
-        raise NotImplementedError
-
-    def get_PWM_range(self, pin):
-        raise NotImplementedError
-
-    def hardware_PWM(self, pin, frequency, duty):
-        raise NotImplementedError
-
-    def i2c_open(self, bus, address):
-        raise NotImplementedError
-
-    def i2c_close(self, handle):
-        raise NotImplementedError
-
-    def i2c_read_device(self, handle, count):
-        raise NotImplementedError
-
-    def i2c_write_device(self, handle, word):
-        raise NotImplementedError
-
-    def i2c_read_i2c_block_data(self, handle, register, count):
-        raise NotImplementedError
-
-    def i2c_write_i2c_block_data(self, handle, register, count, word):
-        raise NotImplementedError
-
-
 class PigpioConnection(pigpio.pi):
     """ Subclass that extends pigpio.pi to throw an exception if there are issues connecting to the pigpio daemon."""
 

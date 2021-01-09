@@ -65,7 +65,7 @@ class Hal:
         self._control_valve = object
         self._expiratory_valve = object
         self._pressure_sensor = object
-        self._gpio = PigpioConnection(show_errors=False)
+        self._gpio = object
         self.config = configparser.RawConfigParser()
         self.config.optionxform = lambda option: option
         self.config.read(config_file)
@@ -82,7 +82,10 @@ class Hal:
                 device_name=section,
                 device_options=opts
             ))  # debug
-            setattr(self, '_' + section, class_(gpio=self._gpio, **opts))
+            if section == "gpio":
+                setattr(self, "_gpio", class_(**opts))
+            else:
+                setattr(self, '_' + section, class_(gpio=self._gpio, **opts))
 
     # TODO: Need exception handling whenever inlet valve is opened
 
