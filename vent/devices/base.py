@@ -22,6 +22,10 @@ def gpio_command(func):
 
 
 class GPIOConnection:
+    @property
+    def connected(self):
+        raise NotImplementedError
+
     def read(self, pin):
         raise NotImplementedError
 
@@ -43,7 +47,25 @@ class GPIOConnection:
     def get_PWM_range(self, pin):
         raise NotImplementedError
 
-    def hardware_PWM(self.pin, frequency, duty):
+    def hardware_PWM(self, pin, frequency, duty):
+        raise NotImplementedError
+
+    def i2c_open(self, bus, address):
+        raise NotImplementedError
+
+    def i2c_close(self, handle):
+        raise NotImplementedError
+
+    def i2c_read_device(self, handle, count):
+        raise NotImplementedError
+
+    def i2c_write_device(self, handle, word):
+        raise NotImplementedError
+
+    def i2c_read_i2c_block_data(self, handle, register, count):
+        raise NotImplementedError
+
+    def i2c_write_i2c_block_data(self, handle, register, count, word):
         raise NotImplementedError
 
 
@@ -334,17 +356,17 @@ class I2CDevice(IODeviceBase):
                 return (cfg & ~(self._mask << self._offset)) | (self._values[value] << self._offset)
 
 
-class ADS1115(I2CDevice):
-    """ ADS1115 16 bit, 4 Channel Analog to Digital Converter.
+class ADS1015(I2CDevice):
+    """ ADS1015 12 bit, 4 Channel Analog to Digital Converter.
     Datasheet:
-     http://www.ti.com/lit/ds/symlink/ads1114.pdf?ts=1587872241912
+        http://www.ti.com/lit/ds/symlink/ads1015.pdf?&ts=1589228228921
 
     Default Values:
      Default configuration for vent:     0xC3E3
      Default configuration on power-up:  0x8583
     """
     _DEFAULT_ADDRESS = 0x48
-    _DEFAULT_VALUES = {'MUX': 0, 'PGA': 4.096, 'MODE': 'SINGLE', 'DR': 860}
+    _DEFAULT_VALUES = {'MUX': 0, 'PGA': 4.096, 'MODE': 'SINGLE', 'DR': 3300}
     _TIMEOUT = 1
     """ Address Pointer Register (write-only) """
     _POINTER_FIELDS = ('P',)
@@ -374,7 +396,7 @@ class ADS1115(I2CDevice):
         ((0, 1), (0, 3), (1, 3), (2, 3), 0, 1, 2, 3),
         (6.144, 4.096, 2.048, 1.024, 0.512, 0.256, 0.256, 0.256),
         ('CONTINUOUS', 'SINGLE'),
-        (8, 16, 32, 64, 128, 250, 475, 860),
+        (128, 250, 490, 920, 1600, 2400, 3300, 3300),
         ('TRADIONAL', 'WINDOW'),
         ('ACTIVE_LOW', 'ACTIVE_HIGH'),
         ('NONLATCHING', 'LATCHING'),
@@ -503,61 +525,6 @@ class ADS1115(I2CDevice):
         """ Return status of ADC conversion; True indicates the conversion is complete and the results ready to be read.
         """
         return bool(self.read_register(self.pointer.P.pack('CONFIG')) >> 15)
-
-
-class ADS1015(ADS1115):
-    """ ADS1015 16 bit, 4 Channel Analog to Digital Converter.
-    Datasheet:
-      http://www.ti.com/lit/ds/symlink/ads1015.pdf?&ts=1589228228921
-
-    Basically the same device as the ADS1115, except has 12 bit resolution instead of 16, and has different (faster)
-    data rates. The difference in data rates is handled by overloading _CONFIG_VALUES. The difference in resolution is
-    irrelevant for implementation.
-    """
-
-    _DEFAULT_ADDRESS = 0x48
-    _DEFAULT_VALUES = {'MUX': 0, 'PGA': 4.096, 'MODE': 'SINGLE', 'DR': 3300}
-
-    """ Address Pointer Register (write-only) """
-    _POINTER_FIELDS = ('P',)
-    _POINTER_VALUES = (
-        (
-            'CONVERSION',
-            'CONFIG',
-            'LO_THRESH',
-            'HIGH_THRESH'
-        ),
-    )
-
-    """ Config Register (R/W) """
-    _CONFIG_FIELDS = (
-        'OS',
-        'MUX',
-        'PGA',
-        'MODE',
-        'DR',
-        'COMP_MODE',
-        'COMP_POL',
-        'COMP_LAT',
-        'COMP_QUE'
-    )
-    _CONFIG_VALUES = (
-        ('NO_EFFECT', 'START_CONVERSION'),
-        ((0, 1), (0, 3), (1, 3), (2, 3), 0, 1, 2, 3),
-        (6.144, 4.096, 2.048, 1.024, 0.512, 0.256, 0.256, 0.256),
-        ('CONTINUOUS', 'SINGLE'),
-        (128, 250, 490, 920, 1600, 2400, 3300, 3300),  # This one is different
-        ('TRADIONAL', 'WINDOW'),
-        ('ACTIVE_LOW', 'ACTIVE_HIGH'),
-        ('NONLATCHING', 'LATCHING'),
-        (1, 2, 3, 'DISABLE')
-    )
-    USER_CONFIGURABLE_FIELDS = ('MUX', 'PGA', 'MODE', 'DR')
-
-    def __init__(self, address=_DEFAULT_ADDRESS, i2c_bus=1, gpio=None):
-        """ See: vent.io.devices.ADS1115.__init__
-        """
-        super().__init__(address=address, i2c_bus=i2c_bus, gpio=gpio)
 
 
 def be16_to_native(data, signed=False) -> int:
