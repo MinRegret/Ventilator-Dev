@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from lung.environments.core import Environment
+from vent.environments.core import Environment
 
 class StitchedSim(Environment):
     def __init__(self, inspiratory_model, u_window, p_window, u_scaler, p_scaler, peep=5., odd_indexing=True):

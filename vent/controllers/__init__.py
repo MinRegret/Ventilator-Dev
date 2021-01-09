@@ -1,10 +1,10 @@
-from lung.controllers._pid import PID
-from lung.controllers._explorer import Explorer
-from lung.controllers._impulse import Impulse
-from lung.controllers._predestined import Predestined
-from lung.controllers._periodic_impulse import PeriodicImpulse
-from lung.controllers._spiky_explorer import SpikyExplorer
-from lung.controllers._residual_explorer import ResidualExplorer
+from vent.controllers._pid import PID
+from vent.controllers._explorer import Explorer
+from vent.controllers._impulse import Impulse
+from vent.controllers._predestined import Predestined
+from vent.controllers._periodic_impulse import PeriodicImpulse
+from vent.controllers._spiky_explorer import SpikyExplorer
+from vent.controllers._residual_explorer import ResidualExplorer
 
 
 __all__ = [

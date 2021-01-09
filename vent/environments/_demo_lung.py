@@ -1,8 +1,8 @@
 import numpy as np
 
-from lung.environments.core import Environment
+from vent.environments.core import Environment
 
-# balloon physics lung ported from Cohen lab's repository
+# balloon physics vent ported from Cohen lab's repository
 # Sources:
 # https://github.com/CohenLabPrinceton/Ventilator-Dev/blob/master/sandbox/HOWTO_RunController.ipynb
 # https://github.com/CohenLabPrinceton/Ventilator-Dev/blob/master/vent/controller/control_module.py

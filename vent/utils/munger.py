@@ -3,11 +3,11 @@ import numpy as np
 import sklearn.preprocessing
 import matplotlib.pyplot as plt
 
-from lung.utils.analyzer import Analyzer
-from lung.core import LungObj
+from vent.utils.analyzer import Analyzer
+from vent.core import VentObj
 
 
-class Munger(LungObj):
+class Munger(VentObj):
     def __init__(self, paths, **kwargs):
         self.paths = paths
         self.analyzers = []

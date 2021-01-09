@@ -1,17 +1,17 @@
 import numpy as np
 
-from lung.environments.core import Environment
+from vent.environments.core import Environment
 
 
-# 2nd attempt at lung simulation
-# observed pressure comes from delayed control signal, with back-pressure from lung
+# 2nd attempt at vent simulation
+# observed pressure comes from delayed control signal, with back-pressure from vent
 class DelayLung(Environment):
     def __init__(self, **kwargs):
         # dynamics hyperparameters
         self.params = {
             "min_volume": 1.5,
-            "R_lung": 10,
-            "C_lung": 6,
+            "R_vent": 10,
+            "C_vent": 6,
             "delay": 25,
             "inertia": 0.995,
             "control_gain": 0.02,
@@ -36,7 +36,7 @@ class DelayLung(Environment):
         # compute all other state vars, which are just functions of volume
         r = (3 * self.volume / (4 * np.pi)) ** (1 / 3)
         r0 = (3 * self.params["min_volume"] / (4 * np.pi)) ** (1 / 3)
-        self.lung_pressure = self.params["C_lung"] * (1 - (r0 / r) ** 6) / (r0 ** 2 * r)
+        self.vent_pressure = self.params["C_vent"] * (1 - (r0 / r) ** 6) / (r0 ** 2 * r)
 
         if len(self.controls_in) < self.params["delay"]:
             self.pipe_impulse = 0
@@ -48,7 +48,7 @@ class DelayLung(Environment):
             self.peep = self.controls_out[-self.params["delay"]]
 
         self.pipe_pressure = self.params["inertia"] * self.pipe_pressure + self.pipe_impulse
-        self.pressure = max(0, self.pipe_pressure - self.lung_pressure)
+        self.pressure = max(0, self.pipe_pressure - self.vent_pressure)
 
         if self.peep:
             self.pipe_pressure *= 0.995
@@ -62,7 +62,7 @@ class DelayLung(Environment):
         dt = self.dt
 
         # 2-dimensional action per timestep
-        flow = self.pressure / self.params["R_lung"]
+        flow = self.pressure / self.params["R_vent"]
 
         # update by flow rate
         self.volume += flow * dt

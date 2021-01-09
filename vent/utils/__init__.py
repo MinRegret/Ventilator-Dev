@@ -1,12 +1,12 @@
-from lung.utils.core import BreathWaveform
-from lung.utils.core import ValveCurve
-from lung.utils.core import WeightClipper
-from lung.utils.analyzer import Analyzer
-from lung.utils.munger import Munger
-from lung.utils.nn import SNN
-from lung.utils.nn import ShallowBoundaryModel
-from lung.utils.nn import ConstantModel
-from lung.utils.nn import InspiratoryModel
+from vent.utils.core import BreathWaveform
+from vent.utils.core import ValveCurve
+from vent.utils.core import WeightClipper
+from vent.utils.analyzer import Analyzer
+from vent.utils.munger import Munger
+from vent.utils.nn import SNN
+from vent.utils.nn import ShallowBoundaryModel
+from vent.utils.nn import ConstantModel
+from vent.utils.nn import InspiratoryModel
 
 __all__ = [
     "BreathWaveform",

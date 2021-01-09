@@ -11,19 +11,19 @@ import matplotlib.pyplot as plt
 
 import logging
 
-from lung.core import LungObj
-from lung.utils.analyzer import Analyzer
-from lung.utils.munger import Munger
+from vent.core import VentObj
+from vent.utils.analyzer import Analyzer
+from vent.utils.munger import Munger
 
-from lung.controllers._impulse import Impulse
-from lung.controllers._predestined import Predestined
+from vent.controllers._impulse import Impulse
+from vent.controllers._predestined import Predestined
 
 EnvironmentRegistry = []
 
 logger = logging.getLogger(__name__)
 
 
-class Environment(LungObj):
+class Environment(VentObj):
     def __new__(cls, *args, **kwargs):
         obj = object.__new__(cls)
         obj.__setattr__("name", cls.__name__)

@@ -1,4 +1,4 @@
-from lung.controllers.core import Controller
+from vent.controllers.core import Controller
 
 
 class Predestined(Controller):

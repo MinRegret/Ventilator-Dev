@@ -3,8 +3,8 @@ from enum import Enum
 import numpy as np
 import dill as pickle
 
-from lung.utils import BreathWaveform
-from lung.core import LungObj
+from vent.utils import BreathWaveform
+from vent.core import VentObj
 
 
 ControllerRegistry = []
@@ -17,7 +17,7 @@ class Phase(Enum):
     PEEP = 4
 
 
-class Controller(LungObj):
+class Controller(VentObj):
     def __new__(cls, *args, **kwargs):
         obj = object.__new__(cls)
         obj.__setattr__("name", cls.__name__)

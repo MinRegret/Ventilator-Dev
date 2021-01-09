@@ -1,6 +1,6 @@
 import numpy as np
 
-from lung.environments.core import Environment
+from vent.environments.core import Environment
 
 
 class Balloon(Environment):
@@ -29,7 +29,7 @@ class Balloon(Environment):
         self.Qout = 0  # exact flow through the solenoid
 
         self.current_pressure = 0  # in unit  cm-H2O
-        self.r_real = (3 * self.min_volume / (4 * np.pi)) ** (1 / 3)  # size of the lung
+        self.r_real = (3 * self.min_volume / (4 * np.pi)) ** (1 / 3)  # size of the vent
         self.current_volume = self.min_volume  # in unit  liters
         self.peep_valve = peep_valve
 

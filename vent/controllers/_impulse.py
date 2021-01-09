@@ -1,4 +1,4 @@
-from lung.controllers.core import Controller
+from vent.controllers.core import Controller
 
 class Impulse(Controller):
     def __init__(self, impulse=50, start=0.5, end=0.65):

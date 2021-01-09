@@ -74,7 +74,7 @@ def import_class(name):
     return mod
 
 
-class LungObj:
+class VentObj:
     def reclass(self):
         self.__class__ = import_class(full_classname(self))
 

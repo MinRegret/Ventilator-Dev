@@ -6,7 +6,7 @@ import matplotlib
 import dill as pickle
 import matplotlib.pyplot as plt
 
-from lung.utils import BreathWaveform
+from vent.utils import BreathWaveform
 
 
 class Analyzer:

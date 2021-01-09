@@ -1,6 +1,6 @@
 import time
 
-from lung.environments.core import Environment
+from vent.environments.core import Environment
 
 
 class PhysicalLung(Environment):

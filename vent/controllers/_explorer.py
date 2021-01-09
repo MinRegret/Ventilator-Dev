@@ -1,5 +1,5 @@
 import numpy as np
-from lung.controllers.core import Controller
+from vent.controllers.core import Controller
 
 
 class Explorer(Controller):
